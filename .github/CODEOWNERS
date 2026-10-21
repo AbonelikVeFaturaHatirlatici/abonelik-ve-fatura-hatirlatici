@@ -1,10 +1,30 @@
-# Bu dosyadaki sahipler ilgili yollarda PR açılınca otomatik inceleme isteği alır.
-# Takım arkadaşlarının GitHub kullanıcı adlarını eklemeyi unutmayın.
-# (Katılımı zorunlu kılmak için ruleset'te "require_code_owner_review" açılabilir;
-#  önce en az iki sahip tanımlanmalı, yoksa sahibin kendi PR'ı onaylanamaz.)
+# Sahipler ilgili yollarda PR açılınca otomatik inceleme isteği alır.
+# Aynı yol için birden fazla kural varsa SONDAKİ geçerlidir; genel kurallar yukarıda.
 
-*                                @ybyaman
-/openapi/                        @ybyaman
-/docs/adr/                       @ybyaman
-/.github/                        @ybyaman
-/backend/app/domain/             @ybyaman
+# Varsayılan: Lead Architect
+*                                   @ybyaman
+
+# Uygulama kodu: Implementation
+/backend/                           @Faldozn @ybyaman
+/mobile/                            @Faldozn @ybyaman
+
+# Testler: Kalite güvence
+/backend/tests/                     @JeniusD1 @Faldozn
+/mobile/__tests__/                  @JeniusD1 @Faldozn
+
+# Ürün ve gereksinimler: Product Owner
+/docs/product/                      @zsudedeveli
+/docs/backlog/                      @zsudedeveli
+/docs/requirements/                 @zsudedeveli
+
+# Mimari ve sözleşme: Lead Architect
+/openapi/                           @ybyaman @zsudedeveli
+/docs/adr/                          @ybyaman
+/docs/architecture/                 @ybyaman
+/backend/app/domain/                @ybyaman @JeniusD1
+
+# Altyapı ve CI/CD: DevOps
+/.github/workflows/                 @AhmeTalhAkyol @ybyaman
+/Dockerfile                         @AhmeTalhAkyol @ybyaman
+/docker-compose*.yml                @AhmeTalhAkyol @ybyaman
+/.github/CODEOWNERS                 @ybyaman
