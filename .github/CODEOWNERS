@@ -18,7 +18,7 @@
 /docs/requirements/                 @zsudedeveli
 
 # Mimari ve sözleşme: Lead Architect
-/openapi/                           @ybyaman @zsudedeveli
+/api/                           @ybyaman @zsudedeveli
 /docs/adr/                          @ybyaman
 /docs/architecture/                 @ybyaman
 /backend/app/domain/                @ybyaman @JeniusD1

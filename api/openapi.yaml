@@ -1,0 +1,400 @@
+openapi: 3.0.3
+info:
+  title: Abonelik Hatırlatıcı API
+  version: 0.1.0
+  description: |
+    Abonelik Hatırlatıcı mobil uygulamasının Sprint 1 sözleşmesi (SENG 321).
+
+    **Kurallar**
+    - Tutarlar kuruş cinsinden tamsayıdır (`amountKurus`), para birimi yalnızca TRY.
+    - Tarihler saatsiz `YYYY-MM-DD` biçimindedir ve Europe/Istanbul takvimine göre yorumlanır. Zaman damgaları UTC'dir.
+    - Her yenileme başlangıç tarihinden hesaplanır; ayda o gün yoksa ayın son günü kullanılır (31 Ocak → 28 Şubat → 31 Mart).
+    - Tüm hatalar tek şemayı kullanır: `{ "code": "...", "message": "..." }`. Geçersiz girdi için tek kod 400'dür.
+    - Başkasına ait kayıt için 403 yerine 404 döner.
+    - İptal yalnızca takip listesinden çıkarmadır; servisteki gerçek abonelik iptal edilmez.
+    - Hatırlatmalar sunucu tarafından yenilemeden 3 gün ve 1 gün önce üretilir; istemci hatırlatma oluşturamaz.
+servers:
+  - url: http://localhost:8000
+    description: Yerel geliştirme (docker compose)
+tags:
+  - name: auth
+    description: Kayıt ve giriş
+  - name: subscriptions
+    description: Abonelik takip listesi
+  - name: reminders
+    description: Üretilmiş hatırlatmalar (salt okunur)
+security:
+  - bearerAuth: []
+paths:
+  /auth/register:
+    post:
+      tags: [auth]
+      operationId: registerUser
+      summary: Yeni hesap oluşturur
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+            example:
+              email: ayse@example.com
+              password: guclu-sifre-123
+      responses:
+        '201':
+          description: Hesap oluşturuldu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: E-posta zaten kayıtlı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: EMAIL_ALREADY_REGISTERED
+                message: Bu e-posta ile kayıtlı bir hesap var.
+  /auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: E-posta ve şifre ile giriş yapar, JWT döndürür
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          description: Giriş başarılı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: E-posta veya şifre hatalı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: INVALID_CREDENTIALS
+                message: E-posta veya şifre hatalı.
+  /subscriptions:
+    post:
+      tags: [subscriptions]
+      operationId: createSubscription
+      summary: Takip listesine abonelik ekler
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreate'
+            example:
+              serviceName: Netflix
+              amountKurus: 22999
+              period: monthly
+              startDate: '2026-01-31'
+      responses:
+        '201':
+          description: Abonelik eklendi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Aynı servis ve periyotta aktif bir abonelik zaten var (servis adında harf farkı önemsiz)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: SUBSCRIPTION_ALREADY_ACTIVE
+                message: Bu servis ve periyot için aktif bir abonelik zaten var.
+    get:
+      tags: [subscriptions]
+      operationId: listSubscriptions
+      summary: Kullanıcının aboneliklerini hatırlatmalarıyla listeler
+      responses:
+        '200':
+          description: Abonelik listesi
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /subscriptions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionId'
+    get:
+      tags: [subscriptions]
+      operationId: getSubscription
+      summary: Tek bir aboneliği getirir
+      responses:
+        '200':
+          description: Abonelik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /subscriptions/{id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/SubscriptionId'
+    post:
+      tags: [subscriptions]
+      operationId: cancelSubscription
+      summary: Aboneliği takip listesinden çıkarır
+      description: |
+        Yalnızca uygulamadaki takibi sonlandırır; servisteki gerçek abonelik iptal edilmez.
+        İptalden sonra yeni hatırlatma üretilmez, daha önce üretilenler listede kalır.
+      responses:
+        '200':
+          description: Abonelik iptal edildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Abonelik zaten iptal edilmiş
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: ALREADY_CANCELLED
+                message: Bu abonelik zaten iptal edilmiş.
+  /reminders:
+    get:
+      tags: [reminders]
+      operationId: listReminders
+      summary: Kullanıcının üretilmiş hatırlatmalarını düz liste olarak getirir
+      responses:
+        '200':
+          description: Hatırlatma listesi (en yeni önce)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reminder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    SubscriptionId:
+      name: id
+      in: path
+      required: true
+      description: Abonelik kimliği
+      schema:
+        type: string
+        format: uuid
+  responses:
+    ValidationError:
+      description: Geçersiz girdi (eksik alan, biçim hatası, sıfır veya negatif tutar)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: VALIDATION_ERROR
+            message: amountKurus sıfırdan büyük olmalıdır.
+    Unauthorized:
+      description: Kimlik doğrulama eksik veya geçersiz
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: UNAUTHORIZED
+            message: Geçerli bir oturum gerekli.
+    NotFound:
+      description: Kayıt bulunamadı (başkasına ait kayıtlar da bu yanıtı döndürür)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: NOT_FOUND
+            message: Abonelik bulunamadı.
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Makine tarafından okunur hata kodu
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          description: Kullanıcıya gösterilebilir açıklama
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: ayse@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: En az 8 karakter
+    User:
+      type: object
+      required: [id, email, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+    Token:
+      type: object
+      required: [accessToken, tokenType]
+      properties:
+        accessToken:
+          type: string
+          description: JWT
+        tokenType:
+          type: string
+          enum: [bearer]
+    Period:
+      type: string
+      enum: [monthly, yearly]
+    SubscriptionCreate:
+      type: object
+      required: [serviceName, amountKurus, period, startDate]
+      properties:
+        serviceName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Netflix
+        amountKurus:
+          type: integer
+          minimum: 1
+          description: Tutar kuruş cinsinden (229,99 TL için 22999). Sıfır ve negatif reddedilir.
+          example: 22999
+        period:
+          $ref: '#/components/schemas/Period'
+        startDate:
+          type: string
+          format: date
+          description: Yenileme hesabının başlangıç tarihi
+          example: '2026-01-31'
+    Subscription:
+      type: object
+      required: [id, serviceName, amountKurus, currency, period, startDate, nextRenewalDate, status, reminders, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        serviceName:
+          type: string
+        amountKurus:
+          type: integer
+          minimum: 1
+        currency:
+          type: string
+          enum: [TRY]
+        period:
+          $ref: '#/components/schemas/Period'
+        startDate:
+          type: string
+          format: date
+        nextRenewalDate:
+          type: string
+          format: date
+          description: Bir sonraki yenileme günü (başlangıç tarihinden hesaplanır)
+        status:
+          type: string
+          enum: [active, cancelled]
+        reminders:
+          type: array
+          description: Bu aboneliğin salt okunur hatırlatmaları
+          items:
+            $ref: '#/components/schemas/ReminderSummary'
+        createdAt:
+          type: string
+          format: date-time
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+    ReminderSummary:
+      type: object
+      required: [daysBefore, remindOn, status]
+      properties:
+        daysBefore:
+          type: integer
+          enum: [3, 1]
+        remindOn:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ReminderStatus'
+    ReminderStatus:
+      type: string
+      description: created = üretildi, sent_mock = mock bildirim gönderildi
+      enum: [created, sent_mock]
+    Reminder:
+      type: object
+      required: [id, subscriptionId, renewalDate, daysBefore, remindOn, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        subscriptionId:
+          type: string
+          format: uuid
+        renewalDate:
+          type: string
+          format: date
+        daysBefore:
+          type: integer
+          enum: [3, 1]
+        remindOn:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/ReminderStatus'
+        createdAt:
+          type: string
+          format: date-time
