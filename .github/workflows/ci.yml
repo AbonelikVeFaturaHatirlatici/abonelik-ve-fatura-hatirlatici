@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Spectral lint (openapi/ varsa)
+      - name: Spectral lint (api/ varsa)
         run: |
-          if ls openapi/*.y*ml >/dev/null 2>&1; then
-            npx --yes @stoplight/spectral-cli@6 lint openapi/*.y*ml
+          if ls api/*.y*ml >/dev/null 2>&1; then
+            npx --yes @stoplight/spectral-cli@6 lint api/*.y*ml
           else
-            echo "openapi/ henüz yok, adım atlandı."
+            echo "api/ henüz yok, adım atlandı."
           fi
 
   backend-test:
