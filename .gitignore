@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.coverage
+
+# Node / mobil
+node_modules/
+.expo/
+
+# Ortam ve gizli bilgiler
+.env
+.env.*
+!.env.example
+
+# Çalışma dosyaları (repoya girmeyecek)
+github-kurulum.zip
+kur.sh
+ruleset-main.json
+PO_Gorusme_Dokumani_Abonelik_Hatirlatici.pdf
