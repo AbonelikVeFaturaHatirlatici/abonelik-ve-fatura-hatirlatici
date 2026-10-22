@@ -2,7 +2,7 @@
 
 **İlgili plan:** [QA Test Planı](test-plan.md)  
 **Durum:** Planlandı; uygulama üzerinde henüz çalıştırılmadı  
-**Kaynak:** PO görüşme taslağı v2, teknik mimari önerisi v2 ve ders proje yönergesi
+**Kaynak:** Teknik belge v4, `api/openapi.yaml`, US-01–US-10 issue'ları ve ders proje yönergesi
 
 Bu senaryolar, mevcut proje kurallarına göre hazırlanmıştır. Beklenen sonuçlar uygulama ve onaylı `api/openapi.yaml` ile doğrulanmadan kesin kabul kriteri sayılmaz. Açık ürün kararları belgenin son bölümündedir. Bir test başarısız olursa gerçek sonuç, build/commit bilgisi ve kanıt ilgili issue/PR'a eklenmelidir.
 
@@ -27,15 +27,15 @@ Aşağıdaki eşleme görevde özellikle istenen US-03, US-05, US-06 ve US-08 se
 | Story | Girdi / durum | QA senaryosu | Beklenen HTTP sonucu | Planlanan otomatik test |
 |---|---|---|---|---|
 | US-03 | Tutar `0` ile abonelik oluşturma | QA-SUB-05 | `400`; abonelik oluşturulmaz | `backend/tests/test_subscriptions_api.py::test_create_subscription_zero_amount_returns_400` |
-| US-05 | Olmayan veya başka kullanıcıya ait aboneliği görüntüleme | QA-SUB-16 | `404`; başka kullanıcının kaydı açığa çıkmaz | `backend/tests/test_subscriptions_api.py::test_get_missing_or_foreign_subscription_returns_404` |
+| US-04 | Olmayan veya başka kullanıcıya ait aboneliği görüntüleme | QA-SUB-16 | `404`; başka kullanıcının kaydı açığa çıkmaz | `backend/tests/test_subscriptions_api.py::test_get_missing_or_foreign_subscription_returns_404` |
 | US-05 | İptal edilmiş aboneliği yeniden iptal etme | QA-SUB-18 | `409`; kayıt durumu değişmez | `backend/tests/test_subscriptions_api.py::test_cancel_already_cancelled_subscription_returns_409` |
 | US-05 | Olmayan veya başka kullanıcıya ait aboneliği iptal etme | QA-SUB-18 | `404`; kayıt durumu değişmez | `backend/tests/test_subscriptions_api.py::test_cancel_missing_or_foreign_subscription_returns_404` |
 | US-06 | Aynı kullanıcıda aynı servis ve periyotla ikinci aktif abonelik | QA-SUB-10 | `409`; ikinci kayıt oluşmaz | `backend/tests/test_subscriptions_api.py::test_duplicate_active_subscription_returns_409` |
-| US-08 | Geçmiş başlangıç tarihli aboneliği geç ekleme | QA-SUB-08 | `201`; `nextRenewalDate`, başlangıç/periyot kuralına göre test tarihinden sonraki ilk yenilemedir | `backend/tests/test_subscriptions_api.py::test_late_added_subscription_gets_next_future_renewal_date` |
-| US-08 | Aktif aboneliği iptal etme | QA-SUB-17 | `200`; kayıt `cancelled` olur ve fiziksel olarak silinmez | `backend/tests/test_subscriptions_api.py::test_cancel_subscription_marks_cancelled` |
-| US-08 | İptal edilmiş abonelik için hatırlatma üretimi | QA-REM-08 | Yeni hatırlatma oluşturulmaz, notifier çağrılmaz | `backend/tests/test_reminders.py::test_cancelled_subscription_does_not_create_reminder` |
+| US-08 | Yenilemeden 3 gün ve 1 gün önce hatırlatma | QA-REM-01/16 | Her eşik için bir hatırlatma; tekrar üretim yok | `backend/tests/test_reminders.py::test_reminders_generated_at_three_and_one_days` |
+| US-08 | Geç eklemede yalnızca kalan hatırlatma günleri | QA-REM-17 | Geçmiş eşikler atlanır; kalan eşikler için birer hatırlatma | `backend/tests/test_reminders.py::test_late_added_subscription_gets_only_remaining_reminders` |
+| US-08 | İptalden sonra yeni hatırlatma üretmeme | QA-REM-08 | Yeni hatırlatma oluşmaz, notifier çağrılmaz | `backend/tests/test_reminders.py::test_cancelled_subscription_does_not_create_reminder` |
 
-US-03 için `400` ve US-05/US-06 için `404`/`409` görev ekranındaki kabul ölçütlerine göre yazılmıştır. US-08'in geç ekleme senaryosu OpenAPI'deki `startDate` alanı ve hesaplanan `nextRenewalDate` alanına göre yorumlanmıştır; tüm yanıt gövdeleri sözleşmeye göre doğrulanmalıdır.
+US-03 için `400` ve US-05/US-06 için `404`/`409` görev ekranındaki kabul ölçütlerine göre yazılmıştır. Başkasının aboneliğini görüntüleme US-04 kapsamındadır. US-08 hatırlatma üretimini kapsar; iptal senaryoları US-05'e aittir.
 
 ## OpenAPI işlem → senaryo → otomatik test eşlemesi
 
@@ -45,10 +45,10 @@ Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'
 |---|---|---|---|---|
 | `POST /auth/register` (`registerUser`) | QA-AUTH-01 → `201` | QA-AUTH-02/03 → `400` | QA-AUTH-04 → `409` | `test_auth_api.py::test_register_valid_user`; `::test_register_invalid_credentials_returns_400`; `::test_register_duplicate_email_returns_409` |
 | `POST /auth/login` (`login`) | QA-AUTH-05 → `200` | QA-AUTH-10 → `400`; QA-AUTH-06 yanlış kimlik bilgisi → `401` | Sözleşmede conflict yanıtı yok | `test_auth_api.py::test_login_valid_user`; `::test_login_invalid_body_returns_400`; `::test_login_wrong_credentials_returns_401` |
-| `POST /subscriptions` (`createSubscription`) | QA-SUB-01/02/08 → `201` | QA-SUB-03/05/07/09 → `400`; QA-AUTH-07 → `401` | QA-SUB-10/11/19 → `409` | `test_subscriptions_api.py::test_create_subscription_valid`; `::test_create_subscription_invalid_input_returns_400`; `::test_create_subscription_unauthorized_returns_401`; `::test_duplicate_active_subscription_returns_409`; `::test_late_added_subscription_gets_next_future_renewal_date` |
+| `POST /subscriptions` (`createSubscription`) | QA-SUB-01/02/08/22 → `201` | QA-SUB-03/05/07/09 → `400`; QA-AUTH-07 → `401` | QA-SUB-10/11/19 → `409` | `test_subscriptions_api.py::test_create_subscription_valid`; `::test_create_subscription_invalid_input_returns_400`; `::test_create_subscription_unauthorized_returns_401`; `::test_duplicate_active_subscription_returns_409`; `::test_future_start_date_is_accepted` |
 | `GET /subscriptions` (`listSubscriptions`) | QA-SUB-14/15 → `200` | QA-AUTH-07 → `401` | Sözleşmede `404`/`409` yanıtı yok | `test_subscriptions_api.py::test_list_subscriptions`; `::test_list_subscriptions_unauthorized_returns_401` |
-| `GET /subscriptions/{id}` (`getSubscription`) | QA-SUB-16 → `200` | QA-AUTH-07 → `401` | QA-SUB-16 → `404` | `test_subscriptions_api.py::test_get_subscription`; `::test_get_subscription_unauthorized_returns_401`; `::test_get_missing_or_foreign_subscription_returns_404` |
-| `POST /subscriptions/{id}/cancel` (`cancelSubscription`) | QA-SUB-17 → `200` | QA-AUTH-07 → `401` | QA-SUB-18 → `404` veya `409` | `test_subscriptions_api.py::test_cancel_subscription_marks_cancelled`; `::test_cancel_unauthorized_returns_401`; `::test_cancel_missing_or_foreign_subscription_returns_404`; `::test_cancel_already_cancelled_subscription_returns_409` |
+| `GET /subscriptions/{id}` (`getSubscription`) | QA-SUB-16 → `200` (US-04) | QA-AUTH-07 → `401` | QA-SUB-16 → `404` (US-04) | `test_subscriptions_api.py::test_get_subscription`; `::test_get_subscription_unauthorized_returns_401`; `::test_get_missing_or_foreign_subscription_returns_404` |
+| `POST /subscriptions/{id}/cancel` (`cancelSubscription`) | QA-SUB-17 → `200` (US-05) | QA-AUTH-07 → `401` | QA-SUB-18 → `404` veya `409` (US-05) | `test_subscriptions_api.py::test_cancel_subscription_marks_cancelled`; `::test_cancel_unauthorized_returns_401`; `::test_cancel_missing_or_foreign_subscription_returns_404`; `::test_cancel_already_cancelled_subscription_returns_409` |
 | `GET /reminders` (`listReminders`) | QA-REM-12 → `200` | QA-AUTH-07 → `401` | Sözleşmede `404`/`409` yanıtı yok | `test_reminders_api.py::test_list_reminders`; `::test_list_reminders_unauthorized_returns_401` |
 
 Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işlemleri için conflict senaryosu eklenmedi. `401` yetkisiz erişimdir; `409` conflict yanıtları kayıt çakışması veya aboneliğin zaten iptal edilmiş olması için ayrı tutulmuştur.
@@ -94,7 +94,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API
 - **Ön koşul/veri:** E-posta veya parola ayrı ayrı eksik, boş ya da yalnızca boşluk karakterlerinden oluşan istekler.
 - **Adımlar:** Her alan eksikliği için ayrı istek gönder.
-- **Beklenen:** Her istek reddedilir, kullanıcı oluşturulmaz ve hata gövdesi OpenAPI'deki hata şemasına uyar. HTTP kodu `400`/`422` kararıyla uyumlu olmalıdır.
+- **Beklenen:** Her istek `400` döndürür, kullanıcı oluşturulmaz ve hata gövdesi OpenAPI'deki Error şemasına uyar.
 
 ### QA-AUTH-03 - E-posta biçimi doğrulama
 
@@ -138,12 +138,12 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Adımlar:** B token'ıyla A'nın aboneliğini görüntüleme, iptal etme ve listeleme işlemlerini dene.
 - **Beklenen:** B, A'nın kaydını göremez veya değiştiremez. Tekil kayıt erişiminde mevcut mimari taslağı `404` bekliyor; listeleme yalnızca B'nin verisini döndürür.
 
-### QA-AUTH-09 - Süresi dolmuş token
+### QA-AUTH-09 - 24 saat sonra süresi dolmuş token
 
 - **Tür:** API, güvenlik
-- **Ön koşul/veri:** Süre sonu geçmiş JWT; token ömrü ve varsa yenileme akışı tanımlanmış.
+- **Ön koşul/veri:** Oluşturulmasının üzerinden 24 saat geçmiş JWT.
 - **Adımlar:** Süresi dolmuş token ile korumalı uç noktayı çağır.
-- **Beklenen:** Token reddedilir ve veri erişimi olmaz. JWT ömrü/yenileme davranışı tanımlanmadan bu senaryonun kesin kabul sonucu belirlenemez.
+- **Beklenen:** Token `401` ile reddedilir ve veri erişimi olmaz. Token yenileme akışı yoktur; kullanıcı yeniden giriş yapar.
 
 ### QA-AUTH-10 - Giriş isteğinde geçersiz veya eksik alan
 
@@ -189,19 +189,19 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Adımlar:** Her değerle abonelik eklemeyi dene.
 - **Beklenen:** Sıfır tutar için görev ölçütüne göre yanıt `400` olur ve abonelik kaydı oluşmaz. Negatif tutar da reddedilir; veritabanı kuralı `amount_kurus > 0` koşulunu korur. Hata gövdesi onaylı OpenAPI şemasına uyar.
 
-### QA-SUB-06 - Kuruş hassasiyeti ve tutar saklama
+### QA-SUB-06 - amountKurus tamsayı doğrulaması
 
 - **Tür:** API, birim, entegrasyon
-- **Ön koşul/veri:** Tam kuruşla temsil edilebilen tutar, örneğin 12,34 TRY; izin verilmeyen hassasiyette tutar, örneğin üç ondalık basamak.
-- **Adımlar:** Her tutarı API formatında gönder; dönen ve saklanan `amount_kurus` değerini kontrol et.
-- **Beklenen:** Tutar kayan nokta hatası olmadan tam kuruş tamsayısı olarak saklanır. Fazladan ondalık basamağın reddedilmesi/yuvarlanması sözleşmede tanımlanmalıdır; sessiz ve tutarsız yuvarlama yapılmamalıdır.
+- **Ön koşul/veri:** Tamsayı `amountKurus: 1234`; ondalıklı `amountKurus: 1234.5`.
+- **Adımlar:** İki değeri ayrı abonelik oluşturma isteklerinde gönder.
+- **Beklenen:** Tamsayı kuruş değeri kabul edilir; ondalıklı değer `400` ile reddedilir. API kuruş cinsinden tamsayı alır, ondalıklı TL tutarı almaz.
 
-### QA-SUB-07 - Desteklenmeyen periyot ve para birimi
+### QA-SUB-07 - Desteklenmeyen periyot ve istekte bulunmayan currency alanı
 
 - **Tür:** API
-- **Ön koşul/veri:** Haftalık periyot; TRY dışı para birimi.
-- **Adımlar:** Her değerle abonelik oluştur.
-- **Beklenen:** İlk sürüm kapsamına göre istek reddedilir; desteklenen periyot aylık/yıllık, para birimi TRY'dir. Yanıt kodu ve hata gövdesi OpenAPI ile uyumlu olur.
+- **Ön koşul/veri:** Haftalık periyot; ayrıca OpenAPI istek şemasında tanımlı olmayan `currency` alanı.
+- **Adımlar:** Haftalık periyotla istek gönder. `currency` alanı davranışını yalnızca sözleşme ek alanları reddediyorsa kontrol et.
+- **Beklenen:** Haftalık periyot `400` ile reddedilir. İstekte `currency` alanı yoktur; yanıt para birimini `TRY` olarak taşır. Bilinmeyen alan davranışı sözleşmede tanımlı olmadığından tek başına başarısızlık ölçütü değildir.
 
 ### QA-SUB-08 - Aboneliği geç ekleme ve sonraki yenileme tarihini hesaplama
 
@@ -216,6 +216,13 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Ön koşul/veri:** Geçersiz takvim tarihi, yanlış format, saat dilimi içeren timestamp ve kabul edilen tarih biçimi.
 - **Adımlar:** Her örneği abonelik oluşturma isteğinde kullan.
 - **Beklenen:** Geçersiz tarihler reddedilir; kabul edilen format OpenAPI ile tutarlıdır. Yenileme günü timestamp değil takvim tarihi olarak ele alınır.
+
+### QA-SUB-22 - Gelecek startDate
+
+- **Tür:** API, birim
+- **Ön koşul/veri:** Saat sabitlenmiş testte bugün `2026-10-22`; `startDate` `2026-11-15`, periyot aylık.
+- **Adımlar:** Gelecek başlangıç tarihiyle abonelik oluştur; dönen `nextRenewalDate` alanını kontrol et.
+- **Beklenen:** İstek `201` olur; gelecek başlangıç tarihi kabul edilir ve ilk yenileme `2026-12-15` olarak hesaplanır.
 
 ## 3. Yinelenen kayıtlar, listeleme ve durum geçişleri
 
@@ -386,26 +393,26 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 
 ## 5. Hatırlatma üretimi, zamanlama ve tekillik
 
-### QA-REM-01 - Hatırlatma eşiğinin geldiği gün
+### QA-REM-01 - Yenilemeden üç gün önce hatırlatma
 
 - **Tür:** Birim, entegrasyon
 - **Ön koşul/veri:** Aktif abonelik; yenileme tarihi bugünden üç takvim günü sonrası; ilgili yenileme için hatırlatma yok.
 - **Adımlar:** Saat 09:00 Europe/Istanbul'da günlük işi çalıştır.
-- **Beklenen:** Tek hatırlatma kaydı oluşur; `remind_on` yenileme tarihinden üç gün öncedir; mock notifier gönderim kaydeder.
+- **Beklenen:** Yenilemeden üç gün önce tek hatırlatma kaydı oluşur; aynı eşik yinelenmez.
 
-### QA-REM-02 - Eşikten dört gün önce
+### QA-REM-02 - Üç günlük eşikten önce
 
 - **Tür:** Birim
-- **Ön koşul/veri:** Yenileme tarihi bugünden dört gün sonrası; hatırlatma yok.
+- **Ön koşul/veri:** Yenileme tarihi bugünden beş gün sonrası; hatırlatma yok.
 - **Adımlar:** Günlük üretim fonksiyonunu bugün tarihiyle çalıştır.
 - **Beklenen:** Henüz hatırlatma oluşturulmaz.
 
-### QA-REM-03 - Eşikten sonraki gün ve gecikmiş iş
+### QA-REM-03 - Kaçırılmış hatırlatma eşiği
 
 - **Tür:** Birim, entegrasyon
 - **Ön koşul/veri:** Hatırlatma eşiği dünden geçmiş; bu yenileme için hatırlatma yok.
 - **Adımlar:** Günlük işi çalıştır.
-- **Beklenen:** Mimari taslağındaki `renewal_date - 3 gün <= bugün` koşuluna göre tek kayıt oluşturulması beklenir. Geç kalmış hatırlatma gönderme politikası PO tarafından onaylanmalıdır.
+- **Beklenen:** Kaçırılmış geçmiş eşik için hatırlatma gönderilmez; yalnızca gelecekte kalan eşikler için hatırlatma oluşturulur.
 
 ### QA-REM-04 - Aynı yenilemeye ikinci üretim
 
@@ -491,6 +498,20 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Adımlar:** Günlük işi tekrar çalıştır; aboneliğin durumunu ve reminder kayıtlarını kontrol et.
 - **Beklenen:** Mevcut reminder korunur, yinelenmez ve hatırlatılmamış yeni bir yenileme döngüsü yoksa gereksiz kayıt oluşturulmaz.
 
+### QA-REM-16 - Yenilemeden bir gün önce hatırlatma
+
+- **Tür:** Birim, entegrasyon
+- **Ön koşul/veri:** Aktif abonelik; yenileme tarihi yarın; bir günlük eşik için hatırlatma yok.
+- **Adımlar:** Hatırlatma üretimini sabit tarihle çalıştır.
+- **Beklenen:** Yenilemeden bir gün önce tek hatırlatma oluşur; yinelenen kayıt veya gönderim yapılmaz.
+
+### QA-REM-17 - Geç eklenen abonelikte yalnızca kalan hatırlatmalar
+
+- **Tür:** Birim, entegrasyon
+- **Ön koşul/veri:** Abonelik yenilemeye iki gün kala eklenmiş; üç günlük eşik geçmiş, bir günlük eşik gelecekte.
+- **Adımlar:** Hatırlatma üretimini ekleme günü ve bir gün sonra sabit saatle çalıştır.
+- **Beklenen:** Geçmiş üç günlük eşik atlanır; yenilemeden bir gün önce kalan hatırlatma bir kez oluşturulur.
+
 ## 6. OpenAPI, kalite kapısı ve regresyon
 
 ### QA-CONTRACT-01 - OpenAPI yapısal doğrulama
@@ -524,7 +545,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 ## 7. Kapsam dışı ve bu sürümde test edilmeyecekler
 
 - Gerçek FCM/Expo push bildirimi ve cihaz token'ı.
-- Haftalık abonelik periyodu ve yenilemeden bir gün önce ikinci hatırlatma.
+- Haftalık abonelik periyodu.
 - Banka/kart verisi, ödeme, çoklu para birimi, harcama grafiği ve aile paylaşımı.
 - Sosyal giriş, e-posta doğrulama, parola sıfırlama ve hesap silme.
 
@@ -532,14 +553,9 @@ Bu özellikler kapsam değişikliğiyle ilk sürüme alınırsa önce PO backlog
 
 ## 8. Netleştirilmesi gereken kararlar
 
-1. Geçersiz girdi yanıt kodu `400` mü `422` mi? Mimari taslak `400`, PO taslağı `400/422` diyor.
-2. E-posta ve servis adı karşılaştırmasında büyük/küçük harf ve baş/son boşluk normalizasyonu nedir?
-3. Tutar API'de hangi formatla gönderilir; kuruş hassasiyetinden fazla basamak gelirse reddedilir mi, yuvarlanır mı?
-4. Başlangıç tarihi yenileme sayılır mı; ilk yenileme bir ay/bir yıl sonra mı başlar?
-5. Geçmiş veya bugüne eşit yeni yenileme tarihi kabul edilir mi? Gecikmiş hatırlatma nasıl ele alınır?
-6. İptal edilen aboneliğin listede “İptal edildi” olarak kalması öneriliyor; PO onayı ve varsayılan liste sıralaması nedir?
-7. Reminder üretiminde notifier başarısız olursa kayıt durumu, retry ve yeniden gönderim nasıl davranır?
-8. Scheduler'ın 09:00 çalışması, tekrar deneme ve uygulama kapalı kalma durumları nasıl raporlanır?
-9. JWT süresi dolduğunda/iptal edildiğinde beklenen yanıt ve token yenileme davranışı var mı?
-10. `next_renewal` fonksiyonuna geçersiz periyot ulaşmasını hangi katman engelleyecek ve doğrudan fonksiyon çağrısında hata davranışı ne olacak?
+1. E-posta büyük/küçük harf karşılaştırması ve servis adındaki baş/son boşluk normalizasyonu (PO yazılı karar bekleniyor).
+2. İptal kayıtlarının listede gösterim biçimi ve varsayılan liste sıralaması.
+3. Notifier başarısız olursa retry ve yeniden gönderim davranışı.
+4. Kapsam raporunda ölçülecek modüller ve hariç tutma gerekçeleri.
+5. `next_renewal` fonksiyonuna geçersiz periyot ulaşırsa kontrollü hata davranışı.
 

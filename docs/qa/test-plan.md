@@ -27,10 +27,10 @@ PR #4'te (`chore: repo iskeleti ve next_renewal`) bulunan yenileme fonksiyonu ve
 - Abonelik ekleme, listeleme, görüntüleme ve iptal etme.
 - Aylık ve yıllık yenileme tarihi hesabı; ay sonu ve artık yıl davranışı.
 - Aynı kullanıcıda aynı servis ve periyot için aktif abonelik çakışmasının engellenmesi.
-- Yenilemeden üç gün önce tek mock hatırlatma üretilmesi ve yinelenen üretimin engellenmesi.
+- Yenilemeden üç gün ve bir gün önce hatırlatma üretilmesi; her eşikte tekillik, geç eklemede yalnızca kalan eşikler ve iptalden sonra yeni hatırlatma üretmeme.
 - Kullanıcılar arası veri izolasyonu ve API hata davranışları.
 
-İlk sürüm kapsamı dışında kalan gerçek push/cihaz kaydı, haftalık periyot, ikinci hatırlatma, ödeme/banka bağlantısı ve harcama grafikleri bu planın fonksiyonel kapsamına dahil değildir.
+İlk sürüm kapsamı dışında kalan gerçek push/cihaz kaydı, haftalık periyot, ödeme/banka bağlantısı ve harcama grafikleri bu planın fonksiyonel kapsamına dahil değildir.
 
 ## 3. Test yaklaşımı
 
@@ -45,7 +45,7 @@ Birim kapsamı ders gereksinimi olan en az **%50** seviyesinde tutulmalıdır. E
 
 ## 4. Senaryolar ve izlenebilirlik
 
-Ayrıntılı ön koşullar, veri örnekleri, adımlar ve beklenen sonuçlar [QA Test Senaryoları](test-cases.md) belgesindedir. Senaryolar PO görüşme taslağı ve teknik mimari önerisindeki kurallara dayanır; `US-01` ... `US-08` numaraları PO backlog taslağındaki story'lere karşılık gelir. Bunlar onaylı kabul kriterleri değil, PO ve Architect incelemesi bekleyen taslak senaryolardır.
+Ayrıntılı ön koşullar, veri örnekleri, adımlar ve beklenen sonuçlar [QA Test Senaryoları](test-cases.md) belgesindedir. Senaryolar teknik belge v4, `api/openapi.yaml` ve US-01–US-10 issue'larına dayanır. PO tarafından karara bağlanan kurallar senaryolara işlenmiştir; e-posta büyük/küçük harf ve servis adı boşluk normalizasyonu için yazılı karar beklenmektedir.
 
 Testler çalıştırıldığında her senaryonun durumu (PASS/FAIL/BLOCKED), uygulanan build/commit ve kanıt ilgili PR/CI raporunda kaydedilmelidir.
 
@@ -93,9 +93,8 @@ Basit ilk sürüm için aşağıdaki davranışları öneriyorum; PO ve Architec
 
 Kesinleştirilecek teknik kararlar:
 
-- Geçersiz girdiler için `400` mü `422` mi kullanılacağı: mimari öneri `400`, PO görüşme taslağı `400/422` diyor. Onaylı OpenAPI tek kaynak olmalı.
-- Yeni kayıt oluştururken geçmiş veya bugüne eşit yenileme tarihinin kabul edilip edilmeyeceği.
 - İptal kayıtlarının listede gösterim biçimi ve varsayılan liste sıralaması.
-- Hatırlatma görevi eşik gününde çalışmazsa gecikmiş hatırlatmanın gönderilip gönderilmeyeceği.
 - Kapsam raporunda hangi dosya/modüllerin ölçüleceği ve test dışı bırakılma gerekçeleri.
+
+Karara bağlanan kurallar: geçersiz girdi `400`; JWT ömrü 24 saat ve yenileme akışı yok; hatırlatmalar yenilemeden 3 ve 1 gün önce üretilir. Eşik kaçırılmışsa geçmiş hatırlatma gönderilmez; abonelik geç eklenirse yalnızca kalan eşikler üretilir.
 
