@@ -5,7 +5,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
 class AppException(Exception):
-    def __init__(self, code: str, message: str, status_code: int = status.HTTP_400_BAD_REQUEST):
+    def __init__(
+        self, code: str, message: str, status_code: int = status.HTTP_400_BAD_REQUEST
+    ):
         self.code = code
         self.message = message
         self.status_code = status_code
@@ -22,7 +24,9 @@ class ValidationError(AppException):
 
 
 class UnauthorizedError(AppException):
-    def __init__(self, message: str = "Oturum açmanız gerekiyor.", code: str = "UNAUTHORIZED"):
+    def __init__(
+        self, message: str = "Oturum açmanız gerekiyor.", code: str = "UNAUTHORIZED"
+    ):
         super().__init__(
             code=code,
             message=message,
@@ -57,7 +61,9 @@ def register_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+    async def validation_exception_handler(
+        _: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         # FastAPI'nin varsayılan 422 yanıtını sözleşmeye uygun 400 VALIDATION_ERROR'a dönüştür
         first_error = exc.errors()[0] if exc.errors() else None
         msg = "İstek gövdesi veya parametreler geçersiz."
@@ -69,7 +75,9 @@ def register_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def http_exception_handler(
+        _: Request, exc: StarletteHTTPException
+    ) -> JSONResponse:
         # 404, 405 vb. varsayılan Starlette HTTP hatalarını da tek şemaya uydur
         code = "HTTP_ERROR"
         if exc.status_code == status.HTTP_404_NOT_FOUND:

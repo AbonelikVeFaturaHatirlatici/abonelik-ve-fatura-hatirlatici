@@ -9,7 +9,7 @@ Proje kök dizininde:
 
 ```bash
 # .env dosyasını oluştur (git'e girmez, JWT_SECRET yerelde değiştirilebilir)
-cp .env.example .env
+cp backend/.env.example backend/.env
 
 # Başlat
 docker compose up -d --build
@@ -39,6 +39,6 @@ pytest --cov=app --cov-fail-under=50
 ## Klasörler
 - `app/domain/` saf iş kuralları (tarih hesabı, hatırlatma kuralı). Veritabanına ve web'e bağımlı olmaz; sahibi Architect + QA.
 - `app/infra/` veritabanı bağlantısı, modeller (`User`, `Subscription`, `Reminder`), ayarlar ve global hata yakalayıcılar.
-- `app/main.py` uygulamanın giriş noktası ve lifespan yönetimi.
+- `app/main.py` uygulamanın giriş noktası.
 - `alembic/` veritabanı şema migrasyonları.
 - `tests/` birim ve API testleri.

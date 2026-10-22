@@ -1,6 +1,5 @@
 import uuid
 from datetime import date, datetime
-from typing import Optional
 
 from sqlalchemy import (
     CheckConstraint,
@@ -28,9 +27,7 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    email: Mapped[str] = mapped_column(
-        Text, unique=True, nullable=False, index=True
-    )
+    email: Mapped[str] = mapped_column(Text, unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -86,7 +83,7 @@ class Subscription(Base):
         server_default=func.now(),
         nullable=False,
     )
-    cancelled_at: Mapped[Optional[datetime]] = mapped_column(
+    cancelled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
@@ -99,9 +96,7 @@ class Subscription(Base):
 class Reminder(Base):
     __tablename__ = "reminders"
     __table_args__ = (
-        CheckConstraint(
-            "days_before IN (3, 1)", name="chk_reminders_days_before"
-        ),
+        CheckConstraint("days_before IN (3, 1)", name="chk_reminders_days_before"),
         CheckConstraint(
             "status IN ('created', 'sent_mock')", name="chk_reminders_status"
         ),

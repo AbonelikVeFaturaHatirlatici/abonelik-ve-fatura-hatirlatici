@@ -1,17 +1,11 @@
-import os
-import sys
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-# Uygulama modüllerini görebilmek için backend klasörünü path'e ekle
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from app.infra.config import settings
-from app.infra.db import Base
-# Tüm modellerin metadata'ya kaydedilmesi için import ediyoruz
 import app.infra.models  # noqa: F401
+from alembic import context
+from app.infra.config import settings
+from app.infra.db import Base, get_sqlalchemy_url
 
 config = context.config
 
@@ -22,7 +16,7 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Ortam değişkeninden gelen URL'i öncelikli yap
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", get_sqlalchemy_url(settings.DATABASE_URL))
 
 
 def run_migrations_offline() -> None:
@@ -48,9 +42,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

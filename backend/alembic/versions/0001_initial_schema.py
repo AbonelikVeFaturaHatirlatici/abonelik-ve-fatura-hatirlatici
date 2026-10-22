@@ -1,21 +1,23 @@
 """Initial schema: users, subscriptions, reminders
 
 Revision ID: 0001_initial_schema
-Revises: 
+Revises:
 Create Date: 2026-10-22
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
+
 # revision identifiers, used by Alembic.
 revision: str = "0001_initial_schema"
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -61,7 +63,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("cancelled_at", sa.DateTime(timezone=True), nullable=True),
-        sa.CheckConstraint("amount_kurus > 0", name="chk_subscriptions_amount_positive"),
+        sa.CheckConstraint(
+            "amount_kurus > 0", name="chk_subscriptions_amount_positive"
+        ),
         sa.CheckConstraint(
             "period IN ('monthly', 'yearly')", name="chk_subscriptions_period"
         ),
@@ -108,9 +112,7 @@ def upgrade() -> None:
             server_default=sa.func.now(),
             nullable=False,
         ),
-        sa.CheckConstraint(
-            "days_before IN (3, 1)", name="chk_reminders_days_before"
-        ),
+        sa.CheckConstraint("days_before IN (3, 1)", name="chk_reminders_days_before"),
         sa.CheckConstraint(
             "status IN ('created', 'sent_mock')", name="chk_reminders_status"
         ),
