@@ -28,3 +28,4 @@
 /Dockerfile                         @AhmeTalhAkyol @ybyaman
 /docker-compose*.yml                @AhmeTalhAkyol @ybyaman
 /.github/CODEOWNERS                 @ybyaman
+/docs/process/                      @ynessakar @ybyaman
