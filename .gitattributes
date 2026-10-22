@@ -1,0 +1,10 @@
+# Varsayılan olarak tüm metin dosyalarında LF satır sonu kullan (Linux / Docker uyumu için)
+* text=auto eol=lf
+
+# Özel uzantılar
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
