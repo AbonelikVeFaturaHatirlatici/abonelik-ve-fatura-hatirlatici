@@ -15,7 +15,7 @@ Bu belge bir test planıdır, test sonucu raporu değildir. Senaryoların çalı
 
 Atanan US-03, US-05, US-06 ve US-08 için senaryo → beklenen HTTP sonucu → planlanan otomatik test eşlemesi [QA Test Senaryoları](test-cases.md#atanan-storyler-icin-izlenebilirlik) belgesinde yer alır. Eşleme görev ekranındaki gereksinimlere dayanır; planlanan testler henüz kodlanmış testler değildir.
 
-Mevcut `main` checkout'unda `api/openapi.yaml` ve `backend/` bulunmuyor; ancak `origin/develop` branch'inde OpenAPI 3.0.3 sözleşmesi ile yenileme ve health testleri var. Test senaryoları belgesindeki işlem matrisi bu sözleşmedeki tüm operasyonları kapsar. `origin/develop` içindeki API uygulaması henüz yalnızca health endpoint'ini içerdiğinden API senaryoları çalıştırılamaz ve gerçek kapsam yüzdesi ölçülemez. En az %50 birim kapsamı hedefi korunmuştur; uygulama ve testler tamamlandığında CI/coverage raporuyla kanıtlanmalıdır.
+`develop` branch'inde OpenAPI 3.0.3 sözleşmesi ile yenileme ve health testleri vardır. Test senaryoları belgesindeki işlem matrisi bu sözleşmedeki tüm operasyonları kapsar. `develop` branch'indeki API uygulaması henüz yalnızca health endpoint'ini içerdiğinden API senaryoları çalıştırılamaz ve gerçek kapsam yüzdesi ölçülemez. En az %50 birim kapsamı hedefi korunmuştur; uygulama ve testler tamamlandığında CI/coverage raporuyla kanıtlanmalıdır.
 
 PR #4'te (`chore: repo iskeleti ve next_renewal`) bulunan yenileme fonksiyonu ve mevcut birim testlerini inceledim. `backend/tests/test_renewal.py` içinde tarih hesabına yönelik yedi test var; kaynak kodu incelendi, test komutları bu incelemede çalıştırılmadı. Ayrıntılı kapsam eşlemesi ve görülen boşluk [QA Test Senaryoları](test-cases.md) belgesinde yer alıyor.
 
@@ -30,7 +30,7 @@ PR #4'te (`chore: repo iskeleti ve next_renewal`) bulunan yenileme fonksiyonu ve
 - Yenilemeden üç gün ve bir gün önce hatırlatma üretilmesi; her eşikte tekillik, geç eklemede yalnızca kalan eşikler ve iptalden sonra yeni hatırlatma üretmeme.
 - Kullanıcılar arası veri izolasyonu ve API hata davranışları.
 
-İlk sürüm kapsamı dışında kalan gerçek push/cihaz kaydı, haftalık periyot, ödeme/banka bağlantısı ve harcama grafikleri bu planın fonksiyonel kapsamına dahil değildir.
+İlk sürüm kapsamı dışında kalan gerçek push/cihaz kaydı, haftalık periyot, ödeme/banka bağlantısı, harcama grafikleri ve US-10 erteleme/snooze bu planın fonksiyonel kapsamına dahil değildir.
 
 ## 3. Test yaklaşımı
 
@@ -45,7 +45,7 @@ Birim kapsamı ders gereksinimi olan en az **%50** seviyesinde tutulmalıdır. E
 
 ## 4. Senaryolar ve izlenebilirlik
 
-Ayrıntılı ön koşullar, veri örnekleri, adımlar ve beklenen sonuçlar [QA Test Senaryoları](test-cases.md) belgesindedir. Senaryolar teknik belge v4, `api/openapi.yaml` ve US-01–US-10 issue'larına dayanır. PO tarafından karara bağlanan kurallar senaryolara işlenmiştir; e-posta büyük/küçük harf ve servis adı boşluk normalizasyonu için yazılı karar beklenmektedir.
+Ayrıntılı ön koşullar, veri örnekleri, adımlar ve beklenen sonuçlar [QA Test Senaryoları](test-cases.md) belgesindedir. Senaryolar teknik belge v4, `api/openapi.yaml`, ADR kararları ve US-01–US-10 issue'larına dayanır. Architect/PO kararları senaryolara işlenmiştir.
 
 Testler çalıştırıldığında her senaryonun durumu (PASS/FAIL/BLOCKED), uygulanan build/commit ve kanıt ilgili PR/CI raporunda kaydedilmelidir.
 
@@ -83,18 +83,15 @@ Kanıt (CI raporu, log, ekran görüntüsü):
 İlgili hata issue'ları:
 ```
 
-## 7. Açık kararlar
+## 7. Karara bağlanan kurallar
 
-Basit ilk sürüm için aşağıdaki davranışları öneriyorum; PO ve Architect onayıyla kesinleştirilmeleri gerekir:
-
-- Uygulama abonelik satın almaz, ödeme yapmaz ve servis sağlayıcısından yenilenme bilgisi almaz. `active` kayıt, kullanıcının izlemeye devam ettiği tekrarlayan abonelik anlamına gelir. Tarih geçince mevcut teknik taslağa göre uygulama bir sonraki dönemin tarihini hesaplar; kullanıcı uygulamada iptal ederse sonraki hatırlatmalar durur.
-- İptal fiziksel silme değildir. Kayıt `cancelled` durumuna alınır ve saklanır; ilk sürümde listede “İptal edildi” durumu gösterilir. Aynı servis/periyot daha sonra yeniden eklenirse yeni kayıt açılır.
-- Her aktif yenileme döngüsü için yenilemeden üç gün önce bir hatırlatma kaydı ve mock gönderim oluşturulur. Gerçek push ve birden fazla hatırlatma ilk sürümde yoktur.
-
-Kesinleştirilecek teknik kararlar:
-
-- İptal kayıtlarının listede gösterim biçimi ve varsayılan liste sıralaması.
-- Kapsam raporunda hangi dosya/modüllerin ölçüleceği ve test dışı bırakılma gerekçeleri.
-
-Karara bağlanan kurallar: geçersiz girdi `400`; JWT ömrü 24 saat ve yenileme akışı yok; hatırlatmalar yenilemeden 3 ve 1 gün önce üretilir. Eşik kaçırılmışsa geçmiş hatırlatma gönderilmez; abonelik geç eklenirse yalnızca kalan eşikler üretilir.
+- Uygulama abonelik satın almaz, ödeme yapmaz ve servis sağlayıcısından yenilenme bilgisi almaz. `active` kayıt, kullanıcının izlemeye devam ettiği tekrarlayan abonelik anlamına gelir. `nextRenewalDate`, `startDate` ve `period` üzerinden istek sırasında hesaplanır; günlük iş abonelik tarihini ilerletmez.
+- E-posta kayıt ve giriş sırasında küçük harfe çevrilir; büyük/küçük harf farkı aynı hesabı ifade eder. Servis adı baş/son boşluklardan kırpılır ve karşılaştırma büyük/küçük harfe duyarsızdır.
+- `startDate` yenileme günü sayılmaz; ilk yenileme başlangıç tarihinden bir periyot sonradır. Gelecek `startDate` kabul edilir.
+- İptal fiziksel silme değildir. Kayıt `cancelled` durumuyla listede kalır ve liste `createdAt` azalan sıradadır.
+- Her aktif yenileme döngüsü için 3 gün ve 1 gün önce ayrı hatırlatmalar oluşturulur. Hatırlatma tekilliği `(subscription_id, renewal_date, days_before)` ile sağlanır. Üretilen hatırlatmanın durumu `sent_mock` olur.
+- Abonelik var olduğu halde iş/eşik çalıştırması kaçırılmışsa, yenileme günü geçmediği sürece sonraki işte eşik telafi edilir. Abonelik eşik tarihinden sonra eklenmişse geçmiş eşik üretilmez; yenileme günü geçtiyse o döngü için hatırlatma üretilmez.
+- Hatırlatma kaydı ve mock gönderim tek işlemde yapılır. Gönderim hata verirse işlem geri alınır, kayıt oluşmaz ve sonraki çalışmada yeniden denenir.
+- Geçersiz girdi `400`; JWT ömrü 24 saat ve yenileme akışı yoktur. `next_renewal` geçersiz periyot için `ValueError` fırlatır.
+- Kapsam raporunda ölçülecek modüller ve hariç tutma gerekçeleri CI raporunda açıklanmalıdır.
 

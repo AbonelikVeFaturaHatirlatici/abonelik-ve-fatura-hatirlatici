@@ -78,7 +78,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 | `GET /reminders` | QA-REM-12 | Geçerli JWT | `200`, yalnızca kullanıcının hatırlatmaları |
 | `GET /reminders` | QA-AUTH-07 | Token yok/bozuk | `401` |
 
-**Kod incelemesinde görülen boşluk:** `next_renewal` içinde `MONTHLY` olmayan her değer 12 ay olarak ele alınıyor. Böylece yanlışlıkla "weekly" gibi bir değer fonksiyona ulaşırsa sessizce yıllık hesap yapılabilir. API/domain sınırında yalnızca `Period.MONTHLY` ve `Period.YEARLY` kabul edildiğini doğrulayan bir test eklenmeli; fonksiyonun doğrudan çağrıldığı yerde de beklenmeyen periyot için kontrollü hata davranışı kararlaştırılmalı.
+**Karara bağlanan davranış:** `next_renewal`, `MONTHLY` ve `YEARLY` dışındaki periyotlar için `ValueError` fırlatır; karşılığı QA-DATE-10'dur.
 
 ## 1. Kayıt, giriş ve kimlik doğrulama
 
@@ -101,14 +101,14 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API
 - **Ön koşul/veri:** E-posta alanında hatalı biçimler: `plain-text`, eksik `@`, eksik alan adı.
 - **Adımlar:** Her değerle kayıt isteği gönder.
-- **Beklenen:** Geçersiz adresler reddedilir ve kullanıcı oluşturulmaz. Kabul edilen e-posta biçiminin sınırları sözleşmede tanımlıdır.
+- **Beklenen:** Geçersiz adresler `400` ve `VALIDATION_ERROR` ile reddedilir; kullanıcı oluşturulmaz.
 
 ### QA-AUTH-04 - Yinelenen e-posta
 
 - **Tür:** API, entegrasyon
 - **Ön koşul/veri:** Aynı e-posta ile kayıtlı kullanıcı.
 - **Adımlar:** Aynı adresle tekrar kayıt isteği gönder; ayrıca e-posta büyük/küçük harf farkıyla tekrar dene.
-- **Beklenen:** Aynı hesabın ikinci kez oluşturulması engellenir. Mevcut mimari taslağı aynı e-posta için `409` bekliyor. E-posta karşılaştırmasının büyük/küçük harf duyarlılığı PO/Architect tarafından karara bağlanmalıdır.
+- **Beklenen:** E-posta küçük harfe normalize edildiğinden büyük/küçük harf farkı aynı hesabı ifade eder. İkinci kayıt `409` döndürür; yeni kullanıcı oluşturulmaz.
 
 ### QA-AUTH-05 - Geçerli bilgilerle giriş
 
@@ -122,7 +122,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API
 - **Ön koşul/veri:** Mevcut kullanıcı için hatalı parola; ayrıca kayıtlı olmayan e-posta.
 - **Adımlar:** İki durum için ayrı giriş istekleri gönder.
-- **Beklenen:** Giriş başarısız olur, token dönmez, yanıt `401` olur. Kullanıcı varlığını gereksiz yere açığa çıkaran farklı hata mesajları kullanılmaması güvenlik açısından gözden geçirilir.
+- **Beklenen:** Hatalı parola ve kayıtlı olmayan e-posta aynı `401` yanıtını ve `INVALID_CREDENTIALS` hata kodunu döndürür; token dönmez.
 
 ### QA-AUTH-07 - Korunan uç noktada eksik/geçersiz token
 
@@ -152,6 +152,13 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Adımlar:** Her gövdeyle `POST /auth/login` isteği gönder.
 - **Beklenen:** Sözleşmeye göre `400`; token dönmez ve hata gövdesi ortak Error şemasına uyar.
 
+### QA-AUTH-11 - Sekiz karakterden kısa parola
+
+- **Tür:** API
+- **Ön koşul/veri:** Kayıt isteğinde 7 karakterli parola.
+- **Adımlar:** Geçerli e-posta ve 7 karakterli parola ile kayıt isteği gönder.
+- **Beklenen:** `minLength: 8` kuralı nedeniyle yanıt `400` olur; kullanıcı oluşturulmaz ve hata gövdesi `VALIDATION_ERROR` kodunu taşır.
+
 ## 2. Abonelik oluşturma ve veri doğrulama
 
 ### QA-SUB-01 - Aylık abonelik oluşturma
@@ -180,7 +187,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API, birim
 - **Ön koşul/veri:** `""`, yalnızca boşluklar ve başta/sonda boşluk içeren servis adları.
 - **Adımlar:** Her değerle abonelik ekle.
-- **Beklenen:** Boş ad reddedilir. Baş/son boşluğun kırpılıp kırpılmayacağı karara bağlanmalı; farklı boşluk biçimleriyle yinelenen kayıt oluşmamalıdır.
+- **Beklenen:** Baş/son boşluklar kırpılır; kırpma sonrası boş ad `400` ile reddedilir. Kırpılmış ad saklanır.
 
 ### QA-SUB-05 - Sıfır ve negatif tutar
 
@@ -224,6 +231,13 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Adımlar:** Gelecek başlangıç tarihiyle abonelik oluştur; dönen `nextRenewalDate` alanını kontrol et.
 - **Beklenen:** İstek `201` olur; gelecek başlangıç tarihi kabul edilir ve ilk yenileme `2026-12-15` olarak hesaplanır.
 
+### QA-SUB-23 - 100 karakterden uzun servis adı
+
+- **Tür:** API, birim
+- **Ön koşul/veri:** 101 karakter uzunluğunda servis adı.
+- **Adımlar:** Geçerli diğer alanlarla birlikte 101 karakterli servis adı gönder.
+- **Beklenen:** `maxLength: 100` kuralı nedeniyle `400` ve `VALIDATION_ERROR` döner; veritabanına kayıt yapılmaz ve `500` oluşmaz.
+
 ## 3. Yinelenen kayıtlar, listeleme ve durum geçişleri
 
 ### QA-SUB-10 - Aynı aktif aboneliğin tekrar eklenmesi
@@ -238,7 +252,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API, entegrasyon
 - **Ön koşul/veri:** `Netflix` adlı aktif kayıt; varyasyonlar `netflix`, ` NETFLIX `.
 - **Adımlar:** Her varyasyonu aynı kullanıcı ve periyotla ekle.
-- **Beklenen:** Mimari taslağı servis adının küçük harfli karşılaştırmasını öngörüyor; eşleşen varyasyonlar yinelenen aktif kayıt sayılır. Boşluk kırpma davranışı ayrıca onaylanmalıdır.
+- **Beklenen:** Servis adları baş/son boşluklardan kırpılarak ve büyük/küçük harfe duyarsız karşılaştırılır. Her varyasyon aynı aktif kayda çarpar ve `409` döner.
 
 ### QA-SUB-12 - Farklı periyot veya farklı kullanıcı
 
@@ -266,7 +280,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API
 - **Ön koşul/veri:** Aynı kullanıcıda aktif ve iptal edilmiş abonelik.
 - **Adımlar:** Listeleme uç noktasını çağır.
-- **Önerilen beklenen:** Basit MVP'de kayıt listede kalır ve “İptal edildi” durumu gösterilir; silme veya ek filtre gerektirmez. PO farklı karar verirse test ve API sözleşmesi güncellenir.
+- **Beklenen:** İptal edilmiş kayıt listede `status: cancelled` ile yer alır. Liste `createdAt` alanına göre azalan sıradadır.
 
 ### QA-SUB-16 - Kayıt görüntüleme
 
@@ -280,7 +294,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API, entegrasyon
 - **Ön koşul/veri:** Kullanıcıya ait aktif abonelik.
 - **Adımlar:** İptal işlemini çağır; yanıtı ve kalıcı durumu yeniden okuyarak kontrol et.
-- **Beklenen:** Yanıt `200`; durum `cancelled` olur ve iptal zamanı kaydedilir (alan varsa). Kayıt fiziksel olarak silinmez ve iptal durumu görünür.
+- **Beklenen:** Yanıt `200`; durum `cancelled` olur ve iptal zamanı kaydedilir (alan varsa). Kayıt fiziksel olarak silinmez. Yanıt, “Servisteki gerçek aboneliğiniz iptal edilmez” mesajını içerir.
 
 ### QA-SUB-18 - İkinci iptal ve iptal yetkisi
 
@@ -309,6 +323,13 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Ön koşul/veri:** Aktif abonelik.
 - **Adımlar:** Aboneliği iptal et; aynı kimlikle detayını veya liste kaydını yeniden oku.
 - **Beklenen:** Kayıt saklanır, durumu `cancelled` görünür. İptal işlemi geçmiş kaydı silmez.
+
+### QA-DB-01 - Veritabanı kısıtları
+
+- **Tür:** Veritabanı, entegrasyon
+- **Ön koşul/veri:** Test veritabanı ve doğrudan SQL çalıştırma erişimi.
+- **Adımlar:** Doğrudan SQL ile aynı kullanıcı/normalize servis/periyot için ikinci aktif abonelik eklemeyi; aynı hatırlatmayı aynı `subscription_id`, `renewal_date`, `days_before` değerleriyle tekrar eklemeyi; `days_before` değerini 2 vermeyi ve `amount_kurus` değerini 0 veya negatif vermeyi dene.
+- **Beklenen:** Kısmi unique indeks ikinci aktif aboneliği engeller. Hatırlatma benzersizliği `(subscription_id, renewal_date, days_before)` üçlüsünde yinelenmeyi engeller ama aynı yenileme için 3 ve 1 günlük kayıtları kabul eder. `days_before` yalnızca `{3, 1}` olabilir ve `amount_kurus > 0` olmalıdır; ihlaller veritabanı kısıtlarıyla reddedilir.
 
 ## 4. Yenileme tarihi hesaplama
 
@@ -361,7 +382,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Tür:** Birim
 - **Veri:** Başlangıç 15 Ocak 2025, aylık periyot, `after=14 Ocak 2025`.
 - **Adımlar:** İlk sonraki yenilemeyi hesapla.
-- **Beklenen:** 15 Şubat 2025 (ilk yenileme `start` gününden sonraki dönemdir; başlangıç günü yenileme sayılıp sayılmadığı PO/Architect tarafından doğrulanmalıdır).
+- **Beklenen:** `startDate` yenileme günü sayılmaz; ilk yenileme 15 Şubat 2025 olur.
 
 ### QA-DATE-08 - `after` tam yenileme gününe eşit
 
@@ -382,7 +403,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Tür:** Birim
 - **Veri:** Enum dışında bir periyot değeri.
 - **Adımlar:** Yenileme fonksiyonunu geçersiz periyotla çağır.
-- **Beklenen:** Geçersiz değer sessizce aylık/yıllık sayılmaz; doğrulama veya kontrollü hata oluşur.
+- **Beklenen:** Fonksiyon `ValueError` fırlatır; geçersiz değer sessizce aylık veya yıllık sayılmaz.
 
 ### QA-DATE-11 - Tarih ve timestamp saklama
 
@@ -410,23 +431,23 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 ### QA-REM-03 - Kaçırılmış hatırlatma eşiği
 
 - **Tür:** Birim, entegrasyon
-- **Ön koşul/veri:** Hatırlatma eşiği dünden geçmiş; bu yenileme için hatırlatma yok.
-- **Adımlar:** Günlük işi çalıştır.
-- **Beklenen:** Kaçırılmış geçmiş eşik için hatırlatma gönderilmez; yalnızca gelecekte kalan eşikler için hatırlatma oluşturulur.
+- **Ön koşul/veri:** Abonelik eşik gününden önce oluşturulmuş; sunucu/iş o gün çalışmamış; eşik geçmiş ama yenileme tarihi henüz gelmemiş ve bu eşik için kayıt yok.
+- **Adımlar:** Günlük işi eşikten sonraki bir günde, yenileme günü gelmeden çalıştır.
+- **Beklenen:** Kaçırılan eşik telafi edilir ve hatırlatma sonraki çalışmada üretilir. Yenileme günü geçmişse o döngü için hiçbir hatırlatma üretilmez. Eşik tarihinden sonra eklenen abonelikte geçmiş eşik üretilmemesi QA-REM-17'de doğrulanır.
 
-### QA-REM-04 - Aynı yenilemeye ikinci üretim
+### QA-REM-04 - Aynı eşik hatırlatmasının ikinci üretimi
 
 - **Tür:** Birim, entegrasyon
-- **Ön koşul/veri:** Aynı abonelik ve yenileme tarihi için hatırlatma kaydı mevcut.
+- **Ön koşul/veri:** Aynı abonelik, yenileme tarihi ve `days_before` değeri için hatırlatma kaydı mevcut.
 - **Adımlar:** Üretim işini tekrar çalıştır.
-- **Beklenen:** İkinci kayıt oluşmaz; kullanıcıya ikinci mock gönderim yapılmaz.
+- **Beklenen:** Aynı eşik için ikinci kayıt ve mock gönderim oluşmaz. Aynı yenileme için diğer eşik (`days_before` 3 ve 1) ayrı bir hatırlatma kaydı olabilir.
 
 ### QA-REM-05 - İşin aynı gün iki kez çalışması
 
 - **Tür:** Entegrasyon
 - **Ön koşul/veri:** Uygun, henüz hatırlatılmamış aktif abonelik.
 - **Adımlar:** Günlük işi aynı tarih için ardışık iki kez çalıştır.
-- **Beklenen:** `(subscription_id, renewal_date)` benzersizliği korunur; veritabanında ve mock gönderim kaydında çift oluşmaz.
+- **Beklenen:** `(subscription_id, renewal_date, days_before)` benzersizliği korunur; her eşik için yinelenen kayıt/gönderim oluşmaz. 3 ve 1 günlük hatırlatmalar aynı yenileme için ayrı kayıtlar olarak bulunabilir.
 
 ### QA-REM-06 - Eşzamanlı iş çalıştırma
 
@@ -440,7 +461,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Tür:** Birim, entegrasyon
 - **Ön koşul/veri:** Aynı aboneliğin önceki yenilemesine ait reminder var; sonraki yenileme tarihi farklı.
 - **Adımlar:** Sonraki döngü için hatırlatma eşiğine gelindiğinde üretim işini çalıştır.
-- **Beklenen:** Yeni `renewal_date` için yeni bir hatırlatma oluşur; önceki kaydın tekilliği yeni döngüyü engellemez.
+- **Beklenen:** `nextRenewalDate`, `startDate` ve `period` üzerinden sonraki döngüye kaymış olarak hesaplanır; sonraki döngü için yeni `renewal_date` ile 3 ve 1 günlük hatırlatmalar oluşur. Önceki döngünün kayıtları yeni döngüyü engellemez.
 
 ### QA-REM-08 - İptal edilmiş abonelik
 
@@ -456,12 +477,12 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Adımlar:** Günlük işi bir kez çalıştır; kayıtları kullanıcı ve abonelik bazında incele.
 - **Beklenen:** Her uygun abonelik için kendi yenilemesine bağlı bir kayıt oluşur; kayıtlar kullanıcılar/abonelikler arasında karışmaz.
 
-### QA-REM-10 - Yenileme gününden sonra tarihi ilerletme
+### QA-REM-10 - Yenileme tarihi istek sırasında hesaplanır
 
 - **Tür:** Birim, entegrasyon
-- **Ön koşul/veri:** Aktif aboneliğin `next_renewal_date` değeri bugünden önce.
-- **Adımlar:** Günlük işi çalıştır; aboneliğin yeni tarihini ve reminder kayıtlarını kontrol et.
-- **Beklenen:** Kullanıcı kaydı `active` tuttuğu sürece yeni tarih `next_renewal(start_date, period, bugün)` ile bugünden sonraki ilk yenileme olur. Başlangıç gününe dayalı ay sonu kuralı korunur. Bu tarih hesabı ödeme veya servis sağlayıcıda gerçek yenileme yapıldığı anlamına gelmez; kullanıcı uygulamada iptal ederse sonraki hatırlatmalar durur.
+- **Ön koşul/veri:** `startDate` ve `period` belli olan aktif abonelik; bir yenileme günü geçmiş.
+- **Adımlar:** `GET /subscriptions` ve `GET /subscriptions/{id}` isteklerini yenileme gününden önce, o gün ve sonrasında yap; dönen `nextRenewalDate` ile reminder kayıtlarını karşılaştır.
+- **Beklenen:** `nextRenewalDate` saklanan bir alan değildir; her istekte `startDate` ve `period` üzerinden hesaplanır. Yenileme günü geçince yanıt bir sonraki dönemin tarihini verir. Günlük iş abonelik tarihini güncellemez. Sonraki döngü hatırlatmaları yeni `renewal_date` ile oluşturulur; hesaplama gerçek ödeme/servis yenilemesi anlamına gelmez.
 
 ### QA-REM-11 - Bildirim sağlayıcısının mock olması
 
@@ -473,9 +494,9 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 ### QA-REM-12 - Hatırlatma listeleme ve kullanıcı izolasyonu
 
 - **Tür:** API
-- **Ön koşul/veri:** Kullanıcı A ve B için hatırlatma kayıtları.
-- **Adımlar:** İki kullanıcı ayrı ayrı listeleme uç noktasını çağırır; ayrıca tokensız çağrı yapılır.
-- **Beklenen:** Her kullanıcı yalnızca kendi hatırlatmalarını görür; başarılı listeleme `200`, tokensız istek `401` olur.
+- **Ön koşul/veri:** Kullanıcı A ve B için abonelik ve hatırlatma kayıtları.
+- **Adımlar:** İki kullanıcı `GET /subscriptions`, `GET /subscriptions/{id}` ve `GET /reminders` uç noktalarını ayrı ayrı çağırsın; ayrıca tokensız çağrılar yap. Oluşturulan hatırlatma kaydının durumunu kontrol et.
+- **Beklenen:** `GET /subscriptions` ve `GET /subscriptions/{id}` yanıtlarında `reminders` dizisi bulunur; her öğe `daysBefore`, `remindOn`, `status` alanlarını taşır. `GET /reminders` da aynı alanlara sahip hatırlatma kayıtlarını döndürür ve kullanıcı yalnızca kendi kayıtlarını görür. Üretilen hatırlatmanın durumu `sent_mock` olur. Başarılı yanıtlar `200`, tokensız çağrılar `401` döner.
 
 ### QA-REM-13 - Zamanlayıcı saati ve test edilebilirlik
 
@@ -489,7 +510,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Tür:** Entegrasyon
 - **Ön koşul/veri:** Mock notifier hata döndürecek şekilde ayarlanmış; uygun abonelik.
 - **Adımlar:** Günlük işi çalıştır ve kayıt durumu ile tekrar çalıştırma davranışını incele.
-- **Beklenen:** Kayıt durumu, tekrar deneme ve çift gönderim davranışı onaylı hata politikasıyla tutarlı olmalıdır. Bu politika mevcut taslaklarda kesin değil; uygulamadan önce karara bağlanmalıdır.
+- **Beklenen:** Hatırlatma kaydı ve mock gönderim tek işlemde yapılır. Gönderim başarısız olursa işlem geri alınır ve hatırlatma kaydı oluşmaz. Sonraki iş çalıştırması gönderimi yeniden dener; başarı halinde tek kayıt `sent_mock` olur.
 
 ### QA-REM-15 - Günlük işi aynı yenileme için kayıt durumunu korur
 
@@ -511,6 +532,13 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Ön koşul/veri:** Abonelik yenilemeye iki gün kala eklenmiş; üç günlük eşik geçmiş, bir günlük eşik gelecekte.
 - **Adımlar:** Hatırlatma üretimini ekleme günü ve bir gün sonra sabit saatle çalıştır.
 - **Beklenen:** Geçmiş üç günlük eşik atlanır; yenilemeden bir gün önce kalan hatırlatma bir kez oluşturulur.
+
+### QA-REM-18 - Yenileme günü geçmiş abonelikte hatırlatma üretmeme
+
+- **Tür:** Birim, entegrasyon
+- **Ön koşul/veri:** Aktif abonelik, `startDate` ve `period` üzerinden hesaplanan yenileme günü geçmiş; o döngü için hatırlatma yok.
+- **Adımlar:** Günlük hatırlatma işini yenileme gününden sonraki tarihle çalıştır.
+- **Beklenen:** Geçmiş döngünün 3 veya 1 günlük eşikleri için hatırlatma üretilmez. API `nextRenewalDate` değerini yeni dönem için hesaplar; yeni döngünün eşikleri kendi `renewal_date` günlerinde değerlendirilir.
 
 ## 6. OpenAPI, kalite kapısı ve regresyon
 
@@ -548,14 +576,11 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - Haftalık abonelik periyodu.
 - Banka/kart verisi, ödeme, çoklu para birimi, harcama grafiği ve aile paylaşımı.
 - Sosyal giriş, e-posta doğrulama, parola sıfırlama ve hesap silme.
+- US-10 erteleme/snooze davranışı.
 
 Bu özellikler kapsam değişikliğiyle ilk sürüme alınırsa önce PO backlog'u ve API sözleşmesi güncellenir; sonra ilgili senaryolar eklenir.
 
-## 8. Netleştirilmesi gereken kararlar
+## 8. Kalan uygulama doğrulamaları
 
-1. E-posta büyük/küçük harf karşılaştırması ve servis adındaki baş/son boşluk normalizasyonu (PO yazılı karar bekleniyor).
-2. İptal kayıtlarının listede gösterim biçimi ve varsayılan liste sıralaması.
-3. Notifier başarısız olursa retry ve yeniden gönderim davranışı.
-4. Kapsam raporunda ölçülecek modüller ve hariç tutma gerekçeleri.
-5. `next_renewal` fonksiyonuna geçersiz periyot ulaşırsa kontrollü hata davranışı.
+Architect/PO tarafından bu senaryolarda kullanılan ürün ve teknik kararlar kesinleştirilmiştir. Uygulama hazırlandığında OpenAPI sözleşmesi, veritabanı kısıtları ve gerçek API yanıtları bu beklentilere göre doğrulanmalıdır. Kapsam raporunda ölçülen modüller ve hariç tutma gerekçeleri belirtilmelidir.
 
