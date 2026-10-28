@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from app.domain.renewal import Period, add_months, next_renewal
 
 
@@ -36,3 +38,14 @@ def test_yearly_feb_29():
 
 def test_after_far_in_the_future():
     assert next_renewal(date(2026, 1, 10), Period.MONTHLY, date(2027, 1, 10)) == date(2027, 2, 10)
+
+
+def test_unsupported_period_raises_value_error():
+    # "weekly" gibi beklenmeyen değer sessizce yıllık hesaplanmamalı
+    with pytest.raises(ValueError):
+        next_renewal(date(2026, 1, 10), "weekly", date(2026, 1, 10))
+
+
+def test_future_start_date_first_renewal_is_start_plus_one_period():
+    # başlangıç günü yenileme sayılmaz; ilk yenileme start + 1 periyot
+    assert next_renewal(date(2026, 11, 15), Period.MONTHLY, date(2026, 10, 22)) == date(2026, 12, 15)

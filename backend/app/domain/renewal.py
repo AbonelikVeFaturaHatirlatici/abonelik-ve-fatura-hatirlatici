@@ -23,8 +23,17 @@ def add_months(start: date, months: int) -> date:
 
 
 def next_renewal(start: date, period: Period, after: date) -> date:
-    """`after` tarihinden sonraki ilk yenileme günü."""
-    step = 1 if period == Period.MONTHLY else 12
+    """`after` tarihinden KESİNLİKLE sonraki ilk yenileme günü.
+
+    Yalnızca MONTHLY ve YEARLY desteklenir; başka bir değer ValueError fırlatır
+    (sessizce yıllık sayılmaz).
+    """
+    if period == Period.MONTHLY:
+        step = 1
+    elif period == Period.YEARLY:
+        step = 12
+    else:
+        raise ValueError(f"Desteklenmeyen periyot: {period!r}")
     k = 1
     while True:
         candidate = add_months(start, k * step)

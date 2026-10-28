@@ -11,7 +11,11 @@ Her aboneliğin yenilemesinden **3 gün ve 1 gün önce** birer hatırlatma üre
 
 ## Karar
 1. Hatırlatmalar **API sürecinin içinde, günde bir kez 09:00'da (Europe/Istanbul)** çalışan zamanlanmış iş (APScheduler) ile üretilir. Ayrı worker veya kuyruk yok.
-2. İş her aktif abonelik ve her `d` değeri (3, 1) için: `remind_on = next_renewal_date − d` vadesi gelmişse (bugün veya daha önce) ve yenileme günü geçmediyse kaydı ekler ve `NotificationPort` üzerinden gönderir. Mock uygulaması kayıt tutar, durum `sent_mock` olur.
+2. İş her aktif abonelik için önce `R = next_renewal(start_date, period, bugün)` hesaplar. `next_renewal`, bugünden **kesinlikle sonraki** ilk yenileme gününü verir; bu yüzden yenileme günü geldiğinde `R` bir sonraki döneme kayar ve o gün için hatırlatma üretilmez. Her `d` değeri (3, 1) için `remind_on = R − d` hesaplanır. Kayıt **yalnızca** şu iki koşul birlikte doğruysa eklenir:
+   - `remind_on ≤ bugün` (vadesi gelmiş; kaçırılan günler telafi edilir),
+   - `remind_on ≥` aboneliğin eklendiği gün (abonelik eklenmeden önceki bir eşik için hatırlatma üretilmez).
+
+   Kayıt eklenir ve `NotificationPort` üzerinden gönderilir; kayıt ve gönderim **tek işlemdedir**. Mock uygulaması kayıt tutar, durum `sent_mock` olur. Gönderim hata verirse işlem geri alınır, kayıt oluşmaz ve sonraki çalışmada yeniden denenir.
 3. **Çift gönderim veritabanında engellenir:** `reminders` tablosunda `(subscription_id, renewal_date, days_before)` benzersizdir. İş iki kez çalışsa veya iki API kopyası olsa bile ikinci kayıt reddedilir; iş bu hatayı sessizce atlar.
 4. İş mantığı `bugün` tarihini parametre alan saf bir fonksiyondur; testte zamanlayıcı gerekmez.
 
@@ -23,4 +27,5 @@ Her aboneliğin yenilemesinden **3 gün ve 1 gün önce** birer hatırlatma üre
 ## Sonuçlar
 - Sunucu 09:00'da kapalıysa iş, vadesi gelmiş olanları sonraki çalışmada üretir (kaçırılan gün telafi edilir); yenileme günü geçtiyse üretmez.
 - Mock bildirim yerine gerçek push eklenirse yalnızca `NotificationPort` adaptörü değişir.
+- Abonelik, bir hatırlatma gününde saat 09:00'dan **sonra** eklenirse o günün hatırlatması üretilmez (iş ertesi gün `R` bir sonraki döneme kaymış olarak çalışır). Sprint 1'de kabul edilen sınırlamadır; ileride abonelik oluşturulurken işin çağrılmasıyla giderilebilir.
 - Benzersiz kısıt ihlali beklenen bir durumdur, hata değildir; iş bunu loglamadan atlar.

@@ -129,6 +129,8 @@ paths:
       tags: [subscriptions]
       operationId: listSubscriptions
       summary: Kullanıcının aboneliklerini hatırlatmalarıyla listeler
+      description: |
+        İptal edilmiş kayıtlar da `status: cancelled` ile listelenir. Sıralama: `createdAt` azalan (en yeni önce).
       responses:
         '200':
           description: Abonelik listesi
@@ -195,7 +197,7 @@ paths:
       summary: Kullanıcının üretilmiş hatırlatmalarını düz liste olarak getirir
       responses:
         '200':
-          description: Hatırlatma listesi (en yeni önce)
+          description: Hatırlatma listesi (`remindOn` azalan, en yeni önce)
           content:
             application/json:
               schema:
