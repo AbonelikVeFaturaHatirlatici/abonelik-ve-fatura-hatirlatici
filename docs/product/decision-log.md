@@ -52,4 +52,4 @@ I, the Product Owner, approve the decisions D-01 to D-22 above, the requirements
 | 3 | Change the label of issue #16 from `priority-2` to `priority-1` (D-14). CONTRIBUTING was updated in PR #3 (D-18). | Scrum Master | No |
 | 4 | Provide the three wireframes and obtain PO approval, including the removal warning (needed for the UI work of the later sprints; not a Sprint 1 deliverable). | Implementation, PO | No |
 | 5 | Ruleset and CI evidence for issue #20. | DevOps | Yes |
-| 6 | Fill in the evidence links in the submission file after the pull requests are merged. | Scrum Master, PO | Yes |
+| 6 | Fill in the evidence links in the submission file after the pull requests are merged. | Scrum Master, DevOps | Yes |
