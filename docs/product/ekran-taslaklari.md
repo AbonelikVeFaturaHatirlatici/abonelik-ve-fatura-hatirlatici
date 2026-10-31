@@ -13,7 +13,7 @@ Kullanıcının sisteme kaydolmasını ve mevcut hesabı ile oturum açmasını 
 * Şifre giriş alanı (`password` - gizli metin)
 * "Giriş Yap" butonu
 * "Kayıt Ol" butonu
-* Hata bildirim alanı (geçersiz format, hatalı şifre vb.)
+* Hata bildirim alanı (geçersiz format, hatalı şifre vb. - API'den dönen `message` alanı gösterilir)
 
 ### Tetiklenen API İşlemleri
 * **Kayıt Ol:** `POST /auth/register`
@@ -21,54 +21,56 @@ Kullanıcının sisteme kaydolmasını ve mevcut hesabı ile oturum açmasını 
   * Başarılı Yanıt: `201 Created`
 * **Giriş Yap:** `POST /auth/login`
   * Gövde: `{"email": "...", "password": "..."}`
-  * Başarılı Yanıt: `200 OK` (Dönen `accessToken` JWT istemcide güvenli şekilde saklanır)
+  * Başarılı Yanıt: `200 OK` (Dönen `accessToken` istemcide saklanır)
 
 ---
 
 ## 2. Abonelik Listesi Ekranı (Subscription List Screen)
 
-Giriş yapmış kullanıcının aktif ve geçmiş aboneliklerini, yaklaşan yenileme tarihlerini ve hatırlatıcı durumlarını listelediği ana ekrandır.
+Giriş yapmış kullanıcının aboneliklerini, durumlarını ve hatırlatıcılarını takip ettiği ana ekrandır.
 
 ### Ekran Bileşenleri
 * Abonelik kartları listesi:
   * Servis Adı (örn. Netflix, Spotify)
-  * Tutar ve Para Birimi (TRY)
+  * Tutar ve Para Birimi (sabit TRY)
   * Sonraki Yenileme Tarihi (`nextRenewalDate`)
-  * Periyot (Aylık/Yıllık)
+  * Periyot (Aylık / Yıllık)
+  * Durum rozeti (`active` veya `cancelled`)
   * Yaklaşan Hatırlatıcılar rozeti (`reminders`)
-* "Yeni Abonelik Ekle" (+) butonu (Ekleme Formu ekranını açar)
-* Abonelik Kartı Detayı / İptal Aksiyonu:
-  * "Aboneliği Listeden Kaldır / İptal Et" butonu
+* "Yeni Abonelik Ekle" (+) butonu
+* Abonelik Kartı Detayı / İşlem Butonu:
+  * **"Takipten Çıkar"** butonu (Karar D-03: Arayüzde kafa karışıklığını önlemek adına "İptal Et" yerine kullanılır)
 
-### İptal Uyarısının Yeri (Kritik UI Kuralı)
-* **Konum:** Kullanıcı bir abonelik kartında "İptal Et" butonuna bastığında açılan onay modal/diyalog penceresinin içinde yer alır.
+### Takipten Çıkarma Onayı (Kritik UI Kuralı)
+* **Onay Penceresi Başlığı:** *"Takipten çıkarılsın mı?"*
 * **Uyarı Metni:** *"Servisteki gerçek aboneliğiniz iptal edilmez."*
-* Kullanıcı bu uyarıyı içeren onay penceresinde "Onayla" dediğinde işlem gerçekleştirilir.
+* Kullanıcı bu uyarıyı onayladığında işlem gerçekleştirilir.
 
 ### Tetiklenen API İşlemleri
 * **Listeleme:** `GET /subscriptions`
-  * Başarılı Yanıt: `200 OK` (Kullanıcıya ait abonelik dizisi)
+  * Başarılı Yanıt: `200 OK`
 * **Tekil Detay:** `GET /subscriptions/{id}`
   * Başarılı Yanıt: `200 OK`
-* **Abonelik İptali:** `POST /subscriptions/{id}/cancel`
+* **Takipten Çıkarma (İptal):** `POST /subscriptions/{id}/cancel`
   * Başarılı Yanıt: `200 OK` (`status: "cancelled"`, `cancelledAt` güncellenir)
+* *Not:* Token süresi bittiğinde (`401 Unauthorized`) kullanıcı otomatik olarak Giriş Ekranına yönlendirilir.
 
 ---
 
 ## 3. Abonelik Ekleme Formu Ekranı (Add Subscription Screen)
 
-Kullanıcının yeni bir abonelik tanımladığı form ekranıdır.
+Kullanıcının yeni bir abonelik eklediği form ekranıdır.
 
 ### Ekran Bileşenleri
 * Servis Adı metin kutusu (`serviceName`)
-* Tutar giriş alanı (`amountKurus` - arayüzde TL girilip arka planda kuruşa dönüştürülür)
-* Para Birimi seçimi (varsayılan: `TRY`)
+* Tutar giriş alanı (`amountKurus` - TL olarak girilip kuruşa çevrilir)
+* Para Birimi göstergesi: Sabit **TRY** etiketi (istek gövdesinde gönderilmez, sözleşme gereği yanıtta döner)
 * Periyot seçimi (Aylık / Yıllık - `monthly` / `yearly`)
 * Başlangıç Tarihi seçici (`startDate` - YYYY-MM-DD)
 * "Kaydet" butonu
-* Form doğrulama ve çakışma hata mesajı alanı (409 Conflict durumunda "Bu servis ve periyot için aktif bir abonelik zaten var." uyarısı)
+* Hata bildirim alanı (400 veya 409 durumlarında sunucudan dönen `message` metni gösterilir)
 
 ### Tetiklenen API İşlemleri
 * **Abonelik Oluşturma:** `POST /subscriptions`
-  * Gövde: `{"serviceName": "...", "amountKurus": ..., "currency": "TRY", "period": "...", "startDate": "..."}`
-  * Başarılı Yanıt: `201 Created` (Hesaplanmış `nextRenewalDate` ve otomatik türetilen `reminders` ile döner)
+  * İstek Gövdesi: `{"serviceName": "...", "amountKurus": ..., "period": "...", "startDate": "..."}` *(currency gönderilmez)*
+  * Başarılı Yanıt: `201 Created`
