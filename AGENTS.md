@@ -46,7 +46,7 @@ Bazı klasörler ilgili PR birleşene kadar görünmeyebilir; `git log` ve açı
 | Product Owner | zsude (@zsudedeveli) | kapsam, öncelik, kabul kriteri, iş kuralı |
 | Scrum Master | Nesibe Sakar | süreç, engeller, takvim, teslim kanıtı |
 | Lead Architect | Buğra (@ybyaman) | mimari, API sözleşmesi, repo kuralları |
-| QA | Nadir Efe (@JeniusD1) | test planı, hata doğrulama, kapsam |
+| QA | Nadir Efe (@nadirtaskiran) | test planı, hata doğrulama, kapsam |
 | DevOps | Ahmet (@AhmeTalhAkyol) | CI/CD, Docker, ortam |
 | Implementation | Faldozn (@Faldozn) | backend ve mobil kodu |
 
