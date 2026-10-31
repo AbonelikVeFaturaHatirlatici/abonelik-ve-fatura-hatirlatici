@@ -9,8 +9,8 @@
 /mobile/                            @Faldozn @ybyaman
 
 # Testler: Kalite güvence
-/backend/tests/                     @JeniusD1 @Faldozn
-/mobile/__tests__/                  @JeniusD1 @Faldozn
+/backend/tests/                     @nadirtaskiran @Faldozn
+/mobile/__tests__/                  @nadirtaskiran @Faldozn
 
 # Ürün ve gereksinimler: Product Owner
 /docs/product/                      @zsudedeveli
@@ -19,7 +19,7 @@
 /api/                               @ybyaman
 /docs/adr/                          @ybyaman
 /docs/architecture/                 @ybyaman
-/backend/app/domain/                @ybyaman @JeniusD1
+/backend/app/domain/                @ybyaman @nadirtaskiran
 
 # Altyapı ve CI/CD: DevOps
 /.github/workflows/                 @AhmeTalhAkyol @ybyaman
