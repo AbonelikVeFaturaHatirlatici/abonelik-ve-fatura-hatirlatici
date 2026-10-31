@@ -54,8 +54,8 @@ erDiagram
 | Alan | Tip | Kısıt |
 | --- | --- | --- |
 | id | uuid | PK |
-| user_id | uuid | NOT NULL, FK → users(id) |
-| service_name | text | NOT NULL, boş olamaz (trim sonrası) |
+| user_id | uuid | NOT NULL, FK → users(id) ON DELETE CASCADE |
+| service_name | varchar(100) | NOT NULL, boş olamaz (trim sonrası) |
 | amount_kurus | integer | NOT NULL, CHECK (amount_kurus > 0) |
 | period | text | NOT NULL, CHECK (period IN ('monthly','yearly')) |
 | start_date | date | NOT NULL |
@@ -69,7 +69,7 @@ Yenileme tarihi saklanmaz; `backend/app/domain/renewal.py` ile `start_date`'ten 
 | Alan | Tip | Kısıt |
 | --- | --- | --- |
 | id | uuid | PK |
-| subscription_id | uuid | NOT NULL, FK → subscriptions(id) |
+| subscription_id | uuid | NOT NULL, FK → subscriptions(id) ON DELETE CASCADE |
 | renewal_date | date | NOT NULL |
 | days_before | smallint | NOT NULL, CHECK (days_before IN (3, 1)) |
 | remind_on | date | NOT NULL (= renewal_date − days_before; zamanlayıcı bu alanı sorgular) |

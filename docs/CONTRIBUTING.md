@@ -18,8 +18,8 @@ Branch adı türleri: `feature/US-12-abonelik-ekle`, `fix/US-15-ay-sonu`, `chore
    git checkout develop && git pull
    git checkout -b feature/US-12-abonelik-ekle
 ```
-3. Küçük commit'ler at. Mesaj: `US-12: abonelik ekleme endpoint'i`.
-4. Pull request aç. **Hedef her zaman `develop`**: `gh pr create --base develop`. Şablonu doldur, issue'yu `Closes #12` ile bağla.
+3. Küçük commit'ler at. Mesaj: `feat: abonelik ekleme endpoint'i` (tür: feat, fix, test, docs, refactor, chore, ci). Issue bağlantısı PR açıklamasında yapılır.
+4. Pull request aç. **Hedef her zaman `develop`**: `gh pr create --base develop`. Şablonu doldur, issue'yu bağla: PR işi bitiriyorsa `Closes #12`, yalnızca katkı veriyorsa `Refs #12`.
 5. En az **1 takım arkadaşının onayı** gerekir. Yazar kendi PR'ını onaylayamaz. Yeni commit gelirse eski onay düşer.
 6. Birleştirdikten sonra branch'i sil.
 
