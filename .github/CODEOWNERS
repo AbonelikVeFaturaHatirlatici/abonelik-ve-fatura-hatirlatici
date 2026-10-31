@@ -14,18 +14,16 @@
 
 # Ürün ve gereksinimler: Product Owner
 /docs/product/                      @zsudedeveli
-/docs/backlog/                      @zsudedeveli
-/docs/requirements/                 @zsudedeveli
 
 # Mimari ve sözleşme: Lead Architect
-/api/                           @ybyaman @zsudedeveli
+/api/                               @ybyaman
 /docs/adr/                          @ybyaman
 /docs/architecture/                 @ybyaman
 /backend/app/domain/                @ybyaman @JeniusD1
 
 # Altyapı ve CI/CD: DevOps
 /.github/workflows/                 @AhmeTalhAkyol @ybyaman
-/Dockerfile                         @AhmeTalhAkyol @ybyaman
+/backend/Dockerfile                         @AhmeTalhAkyol @ybyaman
 /docker-compose*.yml                @AhmeTalhAkyol @ybyaman
 /.github/CODEOWNERS                 @ybyaman
 /docs/process/                      @ynessakar @ybyaman

@@ -2,11 +2,11 @@
 <!-- Kısa özet. -->
 
 ## Bağlı issue
-Closes #
+Closes # <!-- PR işi bitiriyorsa Closes, yalnızca katkı veriyorsa Refs # yaz -->
 
 ## Sözleşme (OpenAPI) etkisi
 - [ ] Yok
-- [ ] Var: `openapi/` dosyası bu PR'da güncellendi ve Spectral lint geçiyor
+- [ ] Var: `api/openapi.yaml` dosyası bu PR'da güncellendi ve Spectral lint geçiyor
 - [ ] Kırıcı değişiklik (sürüm / mobil ekip bilgilendirildi)
 
 ## Kontrol listesi
