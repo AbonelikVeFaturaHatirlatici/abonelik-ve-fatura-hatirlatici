@@ -9,10 +9,11 @@ info:
     - Tutarlar kuruş cinsinden tamsayıdır (`amountKurus`), para birimi yalnızca TRY.
     - Tarihler saatsiz `YYYY-MM-DD` biçimindedir ve Europe/Istanbul takvimine göre yorumlanır. Zaman damgaları UTC'dir.
     - Her yenileme başlangıç tarihinden hesaplanır; ayda o gün yoksa ayın son günü kullanılır (31 Ocak → 28 Şubat → 31 Mart).
-    - Tüm hatalar tek şemayı kullanır: `{ "code": "...", "message": "..." }`. Geçersiz girdi için tek kod 400'dür.
+    - Sözleşmede tanımlı işlemlerin tüm hataları tek şemayı kullanır: `{ "code": "...", "message": "..." }`. Geçersiz girdi için tek kod 400'dür.
     - Başkasına ait kayıt için 403 yerine 404 döner.
     - İptal yalnızca takip listesinden çıkarmadır; servisteki gerçek abonelik iptal edilmez.
     - Hatırlatmalar sunucu tarafından yenilemeden 3 gün ve 1 gün önce üretilir; istemci hatırlatma oluşturamaz.
+    - Sözleşmede tanımlı olmayan bir yöntem tanımlı bir yola gelirse `405` (`Allow` başlığıyla), tanımsız bir yola `404` döner. Bunlar genel HTTP davranışıdır ve işlem olarak sözleşmeye yazılmaz. Bu iki durumda yanıt gövdesi sözleşme garantisi değildir; testler yalnızca durum kodunu denetler.
 servers:
   - url: http://localhost:8000
     description: Yerel geliştirme (docker compose)
