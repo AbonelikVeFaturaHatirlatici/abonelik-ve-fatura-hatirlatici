@@ -223,7 +223,7 @@ components:
         format: uuid
   responses:
     ValidationError:
-      description: Geçersiz girdi (eksik alan, biçim hatası, sıfır veya negatif tutar)
+      description: Geçersiz girdi (eksik alan, biçim hatası, sıfır veya negatif tutar, izin verilen aralık dışı tarih)
       content:
         application/json:
           schema:
@@ -268,6 +268,7 @@ components:
         email:
           type: string
           format: email
+          maxLength: 254
           example: ayse@example.com
         password:
           type: string
@@ -319,7 +320,10 @@ components:
         startDate:
           type: string
           format: date
-          description: Yenileme hesabının başlangıç tarihi
+          description: >-
+            İlk tahsilat tarihi; yenilemeler bu tarihten bir periyot sonra başlar.
+            Geçmiş tarih geçerlidir. Gelecek tarih bugünden en fazla 366 gün sonrası olabilir.
+            En erken kabul edilen tarih 2000-01-01'dir. Bu aralığın dışı 400 döner.
           example: '2026-01-31'
     Subscription:
       type: object
