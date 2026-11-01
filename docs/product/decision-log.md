@@ -10,7 +10,7 @@
 | ID | Decision | Rationale | Status | Acknowledge | Source |
 |---|---|---|---|---|---|
 | D-01 | **Two reminders** per renewal: 3 days and 1 day before, each created once. | Core value of the product; two prompts give a second chance to act. | Approved | Architect | Issue #16; Architecture v4 |
-| D-02 | **Late addition and catch-up rule (as defined in ADR-002).** A reminder is due on `remindOn = renewalDate − daysBefore`. A reminder whose `remindOn` falls before the day the subscription was added is never created (added 2 days before renewal → only the 1-day reminder). A threshold missed after the subscription was added is made up by the next daily job run in one case only: a subscription added **after 09:00 on its 3-day date** gets the 3-day reminder at the next run. A subscription added **after 09:00 on its 1-day date** gets **no catch-up** for the 1-day reminder, because the next run falls on the renewal day. Each (subscription, renewal date, daysBefore) is created at most once. The exact run condition is defined in ADR-002 and Architecture v4. | Users who add a subscription late still receive the warnings that are still useful, and no reminder is created for a time that has already passed. The product rule stays simple; the technical detail stays with the Architect. | Approved | Architect (rule follows ADR-002) | Architecture v4; ADR-002; issue #16 |
+| D-02 | **Late addition and catch-up rule (as defined in ADR-002).** A reminder is due on `remindOn = renewalDate − daysBefore`. It is created by a daily run once `remindOn` has been reached, and never for a date earlier than the day the subscription was added (added 2 days before renewal → only the 1-day reminder). A due reminder that was missed after the subscription existed (the job did not run, or the subscription was added after 09:00 on its reminder date) is made up by the next run, as long as the renewal day has not arrived: on the renewal day the next renewal date moves to the following period and no reminder is created. Examples: added after 09:00 on its 3-day date → the 3-day reminder is made up at the next run; added after 09:00 on its 1-day date → no catch-up, because the next run falls on the renewal day (a limitation accepted for Sprint 1, ADR-002). Each (subscription, renewal date, daysBefore) is created at most once. | Users who add a subscription late still receive the warnings that are still useful, and no reminder is created for a time that has already passed. The product rule stays simple; the technical detail stays with the Architect. | Approved | Architect (rule follows ADR-002) | Architecture v4; ADR-002; issue #16 |
 | D-03 | "Cancel" in the API means **remove from tracking**. The interface warns that the real subscription is not cancelled. | Prevents the user from believing a provider subscription has been stopped. | Approved | none | Issue #13; API summary |
 | D-04 | Duplicate rule: same user, same service name (case-insensitive) and same period, active records only. | Allows monthly and yearly plans of one service; allows re-adding after removal. | Approved | Architect (partial unique index) | API summary §2 |
 | D-05 | Monthly and yearly periods only; TRY only; amounts as integer kuruş. | Matches survey scope; avoids floating-point errors. | Approved | none | API summary §2 |
@@ -45,11 +45,11 @@ I, the Product Owner, approve the decisions D-01 to D-22 above, the requirements
 
 ## 3. Open items after these decisions
 
-| # | Item | Owner | Blocks submission? |
+| # | Item | Owner | Status |
 |---|---|---|---|
-| 1 | Architect confirms that D-02 and D-16 match ADR-002 and Architecture v4 (D-08 and D-09 are already confirmed consistent). | Architect | Yes (consistency) |
-| 2 | The repository's `api/openapi.yaml` is the baseline contract. The Architect applies any differences from these product documents. | Architect | Yes |
-| 3 | Change the label of issue #16 from `priority-2` to `priority-1` (D-14). CONTRIBUTING was updated in PR #3 (D-18). | Scrum Master | No |
-| 4 | Provide the three wireframes and obtain PO approval, including the removal warning (needed for the UI work of the later sprints; not a Sprint 1 deliverable). | Implementation, PO | No |
-| 5 | Ruleset and CI evidence for issue #20. | DevOps | Yes |
-| 6 | Fill in the evidence links in the submission file after the pull requests are merged. | Scrum Master, DevOps | Yes |
+| 1 | Architect confirms that D-02 and D-16 match ADR-002 and Architecture v4. | Architect | Done |
+| 2 | `api/openapi.yaml` is the baseline contract; differences applied by the Architect. | Architect | Done (PR #36, PR #39) |
+| 3 | Label of issue #16 changed to `priority-1` (D-14). | Scrum Master | Done |
+| 4 | Three screen drafts and PO approval. | Implementation, PO | Done (PR #34) |
+| 5 | Ruleset and CI evidence for issue #20. | Architect | Done (`docs/process/evidence/`) |
+| 6 | Fill in the contribution table in the submission file after the last pull requests are merged. | Scrum Master, Architect | In progress |
