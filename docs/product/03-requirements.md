@@ -18,7 +18,7 @@
 | FR-08 | A user views one subscription by id (`getSubscription`). Unknown or foreign id: `404`. Covered by story US-04. | D-17 |
 | FR-09 | A user removes a subscription from tracking (`POST /subscriptions/{id}/cancel`): status becomes `cancelled`, `200`. Already cancelled: `409`. Unknown or foreign: `404`. The interface states that the real provider subscription is **not** cancelled. | D-03 |
 | FR-10 | A daily job at 09:00 Europe/Istanbul creates at most one reminder per (subscription, renewal date, days before) for 3 and 1 days before renewal, with status `sent_mock`. Running it twice creates no duplicates (database unique constraint). | D-01, D-07, D-11 |
-| FR-11 | Late addition and catch-up (ADR-002): a reminder whose `remindOn` falls before the day the subscription was added is not created. A subscription added after 09:00 on its 3-day date receives the 3-day reminder at the next daily job run. A subscription added after 09:00 on its 1-day date receives no catch-up for the 1-day reminder. At most one reminder exists per (subscription, renewal date, daysBefore). The exact run condition is defined in ADR-002. | D-02 |
+| FR-11 | Late addition and catch-up (ADR-002): a reminder is never created for a date earlier than the day the subscription was added. A due reminder that was missed afterwards (the job did not run, or the subscription was added after 09:00 on its reminder date) is made up by the next daily run while the renewal day has not arrived. A subscription added after 09:00 on its 3-day date receives the 3-day reminder at the next run; one added after 09:00 on its 1-day date receives no catch-up for the 1-day reminder. At most one reminder exists per (subscription, renewal date, daysBefore). | D-02 |
 | FR-12 | Cancelled subscriptions receive no new reminders; existing reminders remain visible. | D-09 |
 | FR-13 | A user lists their reminders as a flat, read-only list (`listReminders`), ordered by `remindOn` descending (newest first), then by `daysBefore` ascending. No create, delete, update or snooze. | D-08 |
 
@@ -64,6 +64,6 @@
 | FR-12 | US-05, US-08 | `cancelSubscription`, job | List | AT-26 | TBD |
 | FR-13 | US-09 / #17 | `listReminders` | List | AT-28, AT-29 | TBD |
 
-Acceptance test identifiers (AT-01 … AT-30) are defined in the QA test plan (task T-04, issue #22). Expected result of AT-30 (D-02): added after 09:00 on the 3-day date → the 3-day reminder is made up at the next run; added after 09:00 on the 1-day date → no catch-up for the 1-day reminder.
+Acceptance scenario identifiers (AT-01 … AT-30) are the Product Owner's identifiers used in the backlog and, for the US-08 pure-function tests, in `backend/tests/test_reminders.py`. The QA test plan (task T-04, `docs/qa/`) uses its own scenario identifiers (`QA-*`). Expected result of AT-30 (D-02): added after 09:00 on the 3-day date → the 3-day reminder is made up at the next run; added after 09:00 on the 1-day date → no catch-up for the 1-day reminder.
 
 The "Evidence" column is filled with the link to the merged pull request or test run as work is completed. It is empty on purpose: documented is not implemented, and implemented is not tested.
