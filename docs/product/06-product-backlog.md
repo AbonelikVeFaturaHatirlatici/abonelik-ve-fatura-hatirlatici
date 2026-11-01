@@ -33,10 +33,10 @@ Order of work (top first). Dependencies follow the Architect's dependency commen
 | 3 | US-03 | #11 | As a user, I can add a subscription (service, amount, period, start date) so that it is tracked. | E2 | P1 | 3 | US-02, US-07, T-03 | Implementation (Emre Alay) |
 | 4 | US-07 | #15 | As a user, I see the correct next renewal date of each subscription, including month-end and leap-year cases. | E2 | P1 | 5 | none (pure function) | Architect (ybyaman) + QA |
 | 5 | US-04 | #12 | As a user, I can see my list of subscriptions and open one subscription to view its details. | E2 | P1 | 5 | US-02, US-03, US-07 | Implementation (Emre Alay) |
-| 6 | US-08 | #16 | As a user, I receive a reminder 3 days and 1 day before each renewal, once each. | E3 | **P1** (raised from P2, D-14) | 8 | US-03, US-07, T-03 | Implementation (Emre Alay) + Architect |
+| 6 | US-08 | #16 | As a user, I receive a reminder 3 days and 1 day before each renewal, once each. | E3 | **P1** (raised from P2, D-14) | 8 | US-03, US-07, T-03 | Architect (ybyaman) |
 | 7 | US-05 | #13 | As a user, I can remove a subscription from tracking and I am told the real subscription is not cancelled. | E2 | P2 | 3 | US-02, US-03 | Implementation (Emre Alay) |
 | 8 | US-06 | #14 | As a user, I cannot create the same active subscription twice. | E2 | P2 | 2 | US-03, T-03 | Implementation (Emre Alay) |
-| 9 | US-09 | #17 | As a user, I can see a read-only list of my reminders. | E3 | P2 | 3 | US-02, US-08 | Implementation (Emre Alay) |
+| 9 | US-09 | #17 | As a user, I can see a read-only list of my reminders. | E3 | P2 | 3 | US-02, US-08 | Architect (ybyaman) |
 | – | US-10 | #18 | As a user, I can snooze a reminder. | E3 | P3 (deferred) | 3 | US-08, US-09 | Not in first release |
 
 **Total for stories in the first release (US-01 … US-09): 37 points.** US-10 is excluded.
@@ -47,7 +47,7 @@ The two-reminder feature is the core value of the product (the hypothesis in the
 
 ## 4. Acceptance criteria
 
-Criteria are written so that QA can derive tests directly. `AT-nn` refers to the acceptance test in the QA test plan (T-04).
+Criteria are written so that QA can derive tests directly. `AT-nn` is the identifier of an acceptance scenario of this backlog. The QA test plan (T-04, `docs/qa/`) uses its own `QA-*` scenario identifiers.
 
 ### US-01 · Register (#9) — FR-01
 - Valid email and password of at least 8 characters → `201`, account created, password stored hashed. (AT-01)
@@ -94,6 +94,7 @@ Criteria are written so that QA can derive tests directly. `AT-nn` refers to the
 - Subscription added 2 days before renewal → only the 1-day reminder. (AT-25)
 - Cancel, then run the job in the reminder window → no new reminder. (AT-26)
 - After the renewal date passes the next cycle gets its own two reminders. (AT-27)
+- If the job did not run on a reminder date, the next run makes up the missed reminder while the renewal day has not arrived (ADR-002).
 - Subscription added after 09:00 on its **3-day** date → the 3-day reminder is made up at the next job run; added after 09:00 on its **1-day** date → no catch-up for the 1-day reminder (ADR-002). Thresholds dated before the subscription was added are never created. (AT-30)
 
 ### US-09 · Reminder list (#17) — FR-13
@@ -110,7 +111,7 @@ Criteria are written so that QA can derive tests directly. `AT-nn` refers to the
 | T-01 | #19 | Docker Compose stack (API and database) | E4 | 3 | none | DevOps (AhmeTalhAkyol) |
 | T-02 | #20 | CI checks and repository ruleset (GitHub Actions: ruff, pytest, Spectral OpenAPI lint; required checks `backend-test` and `openapi-lint`) | E4 | 3 | Backend skeleton pull request merged; CI workflow has run | Architect (ybyaman) |
 | T-03 | #21 | Database schema and Alembic migration on PostgreSQL (users, subscriptions with partial unique index on active rows, reminders with unique constraint) | E4 | 3 | Backend skeleton, T-01, ADR-003 | DevOps (AhmeTalhAkyol) |
-| T-04 | #22 | QA test plan and acceptance test suite (AT-01 … AT-30) | E4 | 3 | OpenAPI pull request merged; PO approval of this backlog | QA (nadirtaskiran) |
+| T-04 | #22 | QA test plan and acceptance test suite (`docs/qa/`) | E4 | 3 | OpenAPI pull request merged; PO approval of this backlog | QA (nadirtaskiran) |
 | T-05 | #23 | Android application skeleton in React Native with Expo (three screens, API client from the contract) | E4 | 5 | OpenAPI contract | Implementation (Emre Alay) |
 | T-06 | #24 | Scrum Master sprint calendar and ceremonies | E4 | 1 | none | Scrum Master (ynessakar) |
 
@@ -162,5 +163,5 @@ flowchart LR
 
 - US-08 priority raised from P2 to **P1** (D-14). The GitHub label of issue #16 must be changed from `priority-2` to `priority-1`.
 - Single-subscription view (FR-08) added to US-04 instead of a new story (D-17).
-- Dependencies and the owners of T-02 and T-03 follow the Architect's comments on the issues.
+- Dependencies and the owners follow the Architect's comments and the GitHub assignees (owners of US-08 and US-09 are the Architect; T-02 is assigned to the Architect).
 - Story points added as initial estimates (D-15). The earlier suggestions in the Product Pack were not adopted unchanged.
