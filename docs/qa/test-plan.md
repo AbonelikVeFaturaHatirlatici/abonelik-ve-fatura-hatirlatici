@@ -15,9 +15,9 @@ Bu belge bir test planıdır, test sonucu raporu değildir. Senaryoların çalı
 
 Atanan US-03, US-05, US-06 ve US-08 için senaryo → beklenen HTTP sonucu → planlanan otomatik test eşlemesi [QA Test Senaryoları](test-cases.md#atanan-storyler-icin-izlenebilirlik) belgesinde yer alır. Eşleme görev ekranındaki gereksinimlere dayanır; planlanan testler henüz kodlanmış testler değildir.
 
-`develop` branch'inde OpenAPI 3.0.3 sözleşmesi ile yenileme ve health testleri vardır. Test senaryoları belgesindeki işlem matrisi bu sözleşmedeki tüm operasyonları kapsar. `develop` branch'indeki API uygulaması henüz yalnızca health endpoint'ini içerdiğinden API senaryoları çalıştırılamaz ve gerçek kapsam yüzdesi ölçülemez. En az %50 birim kapsamı hedefi korunmuştur; uygulama ve testler tamamlandığında CI/coverage raporuyla kanıtlanmalıdır.
+`origin/develop` `8aba13f` sürümünde OpenAPI 3.0.3 sözleşmesi, health/altyapı kodu, yenileme hesabı ve saf hatırlatma hesabı bulunur. Bu sürümde 25 mevcut birim/altyapı testi vardır; bunlar auth, abonelik veya hatırlatma HTTP endpoint'lerini sınamaz. API uygulaması henüz yalnızca `/health` endpoint'ini içerdiğinden bu plandaki API senaryoları çalıştırılamaz. Son sürümün kapsamı CI raporundan kaydedilmelidir.
 
-PR #4'te (`chore: repo iskeleti ve next_renewal`) bulunan yenileme fonksiyonu ve mevcut birim testlerini inceledim. `backend/tests/test_renewal.py` içinde tarih hesabına yönelik yedi test var; kaynak kodu incelendi, test komutları bu incelemede çalıştırılmadı. Ayrıntılı kapsam eşlemesi ve görülen boşluk [QA Test Senaryoları](test-cases.md) belgesinde yer alıyor.
+`origin/develop` `8aba13f` içindeki `backend/tests/test_renewal.py` ve `backend/tests/test_reminders.py` tarih ve saf hatırlatma hesabı testlerini içerir. Bu testler API endpoint'lerini kapsamaz. Ayrıntılı kapsam eşlemesi ve görülen boşluk [QA Test Senaryoları](test-cases.md) belgesinde yer alıyor.
 
 ## 2. Test kapsamı
 
@@ -48,6 +48,43 @@ Birim kapsamı ders gereksinimi olan en az **%50** seviyesinde tutulmalıdır. E
 Ayrıntılı ön koşullar, veri örnekleri, adımlar ve beklenen sonuçlar [QA Test Senaryoları](test-cases.md) belgesindedir. Senaryolar teknik belge v4, `api/openapi.yaml`, ADR kararları ve US-01–US-10 issue'larına dayanır. Architect/PO kararları senaryolara işlenmiştir.
 
 Testler çalıştırıldığında her senaryonun durumu (PASS/FAIL/BLOCKED), uygulanan build/commit ve kanıt ilgili PR/CI raporunda kaydedilmelidir.
+
+### Kabul testi kimlikleri ve senaryo eşlemesi
+
+Ürün gereksinimleri ve backlog'daki AT-01–AT-30 kimlikleri, ayrıntılı QA senaryolarına şu şekilde bağlanır:
+
+| Kabul testi | QA senaryosu |
+|---|---|
+| AT-01 | QA-AUTH-01 |
+| AT-02 | QA-AUTH-02, QA-AUTH-03, QA-AUTH-11, QA-AUTH-12 |
+| AT-03 | QA-AUTH-04 |
+| AT-04 | QA-AUTH-05 |
+| AT-05 | QA-AUTH-06 |
+| AT-06 | QA-AUTH-10 |
+| AT-07 | QA-AUTH-07 |
+| AT-08 | QA-SUB-01, QA-SUB-02 |
+| AT-09 | QA-SUB-03–09, QA-SUB-23 |
+| AT-10 | QA-AUTH-08, QA-SUB-16 |
+| AT-11 | QA-SUB-14, QA-SUB-15, QA-REM-12 |
+| AT-12 | QA-SUB-10, QA-SUB-11 |
+| AT-13 | QA-SUB-12 (farklı periyot) |
+| AT-14 | QA-SUB-12 (farklı kullanıcı) |
+| AT-15 | QA-SUB-13 |
+| AT-16 | QA-SUB-17 |
+| AT-17 | QA-SUB-18 |
+| AT-18 | QA-DATE-01 |
+| AT-19 | QA-DATE-02 |
+| AT-20 | QA-DATE-05, QA-DATE-06 |
+| AT-21 | QA-DATE-01, QA-DATE-03, QA-DATE-04 |
+| AT-22 | QA-REM-01 |
+| AT-23 | QA-REM-16 |
+| AT-24 | QA-REM-04, QA-REM-05 |
+| AT-25 | QA-REM-17 |
+| AT-26 | QA-REM-08 |
+| AT-27 | QA-REM-07 |
+| AT-28 | QA-REM-12 |
+| AT-29 | Senaryo eklenmedi; test edilebilir kabul ölçütü netleştirilmeli |
+| AT-30 | QA-REM-19 |
 
 ## 5. Teste hazır olma ve kabul koşulları
 
