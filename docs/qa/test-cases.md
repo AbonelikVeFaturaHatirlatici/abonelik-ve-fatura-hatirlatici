@@ -1,10 +1,10 @@
 # QA Test Senaryoları
 
 **İlgili plan:** [QA Test Planı](test-plan.md)  
-**Durum:** Planlandı; uygulama üzerinde henüz çalıştırılmadı  
+**Durum:** Bu belgedeki API senaryoları planlandı; endpoint uygulaması üzerinde henüz çalıştırılmadı. Güncel `origin/develop` (`8aba13f`) health, altyapı, yenileme ve hatırlatma birim testlerini içeriyor; API endpoint testleri henüz yok.
 **Kaynak:** Teknik belge v4, `api/openapi.yaml`, US-01–US-10 issue'ları ve ders proje yönergesi
 
-Bu senaryolar, mevcut proje kurallarına göre hazırlanmıştır. Beklenen sonuçlar uygulama ve onaylı `api/openapi.yaml` ile doğrulanmadan kesin kabul kriteri sayılmaz. Açık ürün kararları belgenin son bölümündedir. Bir test başarısız olursa gerçek sonuç, build/commit bilgisi ve kanıt ilgili issue/PR'a eklenmelidir.
+Bu senaryolar, mevcut proje kuralları ve Architect/PO kararlarına göre hazırlanmıştır. Beklenen sonuçlar uygulama ve onaylı `api/openapi.yaml` ile doğrulanmadan kesin kabul kriteri sayılmaz. Kalan sözleşme uyumu ve uygulama doğrulamaları belgenin son bölümlerindedir. Bir test başarısız olursa gerçek sonuç, build/commit bilgisi ve kanıt ilgili issue/PR'a eklenmelidir.
 
 ## PR #4 incelemesi
 
@@ -39,7 +39,7 @@ US-03 için `400` ve US-05/US-06 için `404`/`409` görev ekranındaki kabul öl
 
 ## OpenAPI işlem → senaryo → otomatik test eşlemesi
 
-Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'inde bulunan `api/openapi.yaml` sürümüne göre hazırlandı. `origin/develop` sözleşmesi OpenAPI 3.0.3 kullanıyor. Aşağıdaki otomatik test adları önerilen eşlemelerdir; yalnızca yenileme tarihine ait yedi test ve health testi şu anki `origin/develop` ağacında mevcut. Endpoint uygulaması ve API testleri henüz bu branch'te bulunmuyor.
+Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'inde bulunan `api/openapi.yaml` sürümüne göre hazırlandı. `origin/develop` sözleşmesi OpenAPI 3.0.3 kullanıyor. Aşağıdaki otomatik test adları önerilen eşlemelerdir; güncel `origin/develop` `36d0bcc` ağacında health, altyapı ve yenileme testleri mevcut. Abonelik, auth ve reminder endpoint uygulamaları ile bunların API testleri henüz bulunmuyor.
 
 | OpenAPI işlemi | Başarı senaryosu / yanıt | Hatalı girdi veya yetki senaryosu / yanıt | Çakışma / bulunamadı | Planlanan test eşlemesi |
 |---|---|---|---|---|
@@ -52,6 +52,18 @@ Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'
 | `GET /reminders` (`listReminders`) | QA-REM-12 → `200` | QA-AUTH-07 → `401` | Sözleşmede `404`/`409` yanıtı yok | `test_reminders_api.py::test_list_reminders`; `::test_list_reminders_unauthorized_returns_401` |
 
 Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işlemleri için conflict senaryosu eklenmedi. `401` yetkisiz erişimdir; `409` conflict yanıtları kayıt çakışması veya aboneliğin zaten iptal edilmiş olması için ayrı tutulmuştur.
+
+### Sözleşme uyum incelemesi (`origin/develop` `8aba13f`)
+
+OpenAPI 3.0.3 belgesi yapısal doğrulamadan geçti. Architect/PO kararlarının tümü sözleşmede açıkça temsil edilmiyor; API kodlanmadan önce Architect ile sözleşme sahibi şu noktaları eşleştirmelidir:
+
+- `serviceName` baş/son boşluk kırpma kuralı sözleşmede belirtilmiyor; yinelenen abonelik açıklaması yalnızca harf duyarsız karşılaştırmadan bahsediyor.
+- `GET /reminders` açıklaması `remindOn` azalan sıralamayı belirtiyor; aynı `remindOn` tarihindeki kayıtlar için D-08'deki `daysBefore` artan bağlayıcı sırası OpenAPI açıklamasında belirtilmiyor.
+- Kullanıcı e-postasının benzersizliğinin harf duyarsız olması ve kayıt/girişte küçük harfe normalize edilmesi gereksinimlerde var; OpenAPI şeması `maxLength: 254` içeriyor ama normalizasyon kuralını açıklamıyor.
+- İptal uyarısı son ürün kararında arayüz sorumluluğudur; QA-SUB-17 metni API yanıtından değil, iptal arayüzünden doğrular. Arayüz henüz işlevsel olmadığından bu kontrol UI uygulandığında yürütülür.
+- QA-DB-01 veritabanı kısıtlarını doğrular; bu beklentilerin uygulanması migration/model ve entegrasyon testleri hazır olduğunda kontrol edilebilir.
+
+**Kullanıcı teyidi:** E-posta ve servis adı karşılaştırmalarında büyük/küçük harf farkı sonucu değiştirmez; büyük harfler küçük harflerle eşdeğer kabul edilir. Bu kural senaryolarda yer alıyor, ancak e-posta normalizasyonu ve servis adının kırpılması OpenAPI sözleşmesinde açıkça yazılmalı.
 
 İstenen işlem/girdi/beklenen yanıt senaryo özeti:
 
@@ -115,7 +127,7 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Tür:** API
 - **Ön koşul/veri:** QA-AUTH-01 ile oluşturulmuş kullanıcı.
 - **Adımlar:** Doğru e-posta ve parola ile giriş yap.
-- **Beklenen:** Yanıt `200`; geçerli bir JWT döner. Token yanıtta ve korumalı isteklerde beklenen biçimde kullanılabilir.
+- **Beklenen:** Yanıt `200`; geçerli bir JWT döner. Kayıtlı e-postanın büyük harf içeren biçimiyle giriş de başarılı olmalıdır; e-posta harf duyarsızdır. Token korumalı isteklerde kullanılabilir.
 
 ### QA-AUTH-06 - Hatalı giriş bilgileri
 
@@ -158,6 +170,13 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Ön koşul/veri:** Kayıt isteğinde 7 karakterli parola.
 - **Adımlar:** Geçerli e-posta ve 7 karakterli parola ile kayıt isteği gönder.
 - **Beklenen:** `minLength: 8` kuralı nedeniyle yanıt `400` olur; kullanıcı oluşturulmaz ve hata gövdesi `VALIDATION_ERROR` kodunu taşır.
+
+### QA-AUTH-12 - 254 karakterden uzun e-posta
+
+- **Tür:** API
+- **Ön koşul/veri:** Biçim olarak geçerli, toplam 255 karakter uzunluğunda e-posta adresi.
+- **Adımlar:** Bu e-posta ve geçerli bir parola ile kayıt isteği gönder.
+- **Beklenen:** OpenAPI `maxLength: 254` sınırı nedeniyle `400` ve `VALIDATION_ERROR` döner; kullanıcı oluşturulmaz.
 
 ## 2. Abonelik oluşturma ve veri doğrulama
 
@@ -220,16 +239,16 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 ### QA-SUB-09 - Tarih biçimi ve sınırları
 
 - **Tür:** API
-- **Ön koşul/veri:** Geçersiz takvim tarihi, yanlış format, saat dilimi içeren timestamp ve kabul edilen tarih biçimi.
-- **Adımlar:** Her örneği abonelik oluşturma isteğinde kullan.
-- **Beklenen:** Geçersiz tarihler reddedilir; kabul edilen format OpenAPI ile tutarlıdır. Yenileme günü timestamp değil takvim tarihi olarak ele alınır.
+- **Ön koşul/veri:** Geçersiz takvim tarihi, yanlış format, saat dilimi içeren timestamp; `2000-01-01`; `1999-12-31`; bugünden 366 gün sonrası ve 367 gün sonrası.
+- **Adımlar:** Her örneği abonelik oluşturma isteğinde kullan; test saatini sabitle.
+- **Beklenen:** `YYYY-MM-DD` dışında veya takvimde olmayan tarih `400` olur. `2000-01-01` ve bugünden en fazla 366 gün sonraki tarih kabul edilir; daha eski ve 366 günü aşan gelecek tarih `400` olur. Yenileme günü saat dilimi taşıyan timestamp değil takvim tarihidir.
 
 ### QA-SUB-22 - Gelecek startDate
 
 - **Tür:** API, birim
 - **Ön koşul/veri:** Saat sabitlenmiş testte bugün `2026-10-22`; `startDate` `2026-11-15`, periyot aylık.
 - **Adımlar:** Gelecek başlangıç tarihiyle abonelik oluştur; dönen `nextRenewalDate` alanını kontrol et.
-- **Beklenen:** İstek `201` olur; gelecek başlangıç tarihi kabul edilir ve ilk yenileme `2026-12-15` olarak hesaplanır.
+- **Beklenen:** İstek `201` olur; izin verilen aralıktaki gelecek başlangıç tarihi kabul edilir ve ilk yenileme `2026-12-15` olarak hesaplanır.
 
 ### QA-SUB-23 - 100 karakterden uzun servis adı
 
@@ -289,12 +308,12 @@ Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işle
 - **Adımlar:** A token'ıyla her kimliği ayrı ayrı çağır.
 - **Beklenen:** A'nın kaydı `200`; olmayan ve B'ye ait kimlikler `404`. B'ye ait kaydın varlığı açığa çıkmaz.
 
-### QA-SUB-17 - Aktif aboneliği iptal etme
+### QA-SUB-17 - Aktif aboneliği takipten çıkarma
 
-- **Tür:** API, entegrasyon
+- **Tür:** API, entegrasyon, UI
 - **Ön koşul/veri:** Kullanıcıya ait aktif abonelik.
 - **Adımlar:** İptal işlemini çağır; yanıtı ve kalıcı durumu yeniden okuyarak kontrol et.
-- **Beklenen:** Yanıt `200`; durum `cancelled` olur ve iptal zamanı kaydedilir (alan varsa). Kayıt fiziksel olarak silinmez. Yanıt, “Servisteki gerçek aboneliğiniz iptal edilmez” mesajını içerir.
+- **Beklenen:** API `200` döndürür; durum `cancelled` olur, kayıt fiziksel olarak silinmez. Kullanıcı arayüzü “Servisteki gerçek aboneliğiniz iptal edilmez” uyarısını gösterir. Bu metin API yanıt gövdesinde bulunmak zorunda değildir.
 
 ### QA-SUB-18 - İkinci iptal ve iptal yetkisi
 
@@ -496,7 +515,7 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Tür:** API
 - **Ön koşul/veri:** Kullanıcı A ve B için abonelik ve hatırlatma kayıtları.
 - **Adımlar:** İki kullanıcı `GET /subscriptions`, `GET /subscriptions/{id}` ve `GET /reminders` uç noktalarını ayrı ayrı çağırsın; ayrıca tokensız çağrılar yap. Oluşturulan hatırlatma kaydının durumunu kontrol et.
-- **Beklenen:** `GET /subscriptions` ve `GET /subscriptions/{id}` yanıtlarında `reminders` dizisi bulunur; her öğe `daysBefore`, `remindOn`, `status` alanlarını taşır. `GET /reminders` da aynı alanlara sahip hatırlatma kayıtlarını döndürür ve kullanıcı yalnızca kendi kayıtlarını görür. Üretilen hatırlatmanın durumu `sent_mock` olur. Başarılı yanıtlar `200`, tokensız çağrılar `401` döner.
+- **Beklenen:** `GET /subscriptions` ve `GET /subscriptions/{id}` yanıtlarında `reminders` dizisi bulunur; her öğe `daysBefore`, `remindOn`, `status` alanlarını taşır. `GET /reminders` da aynı alanlara sahip hatırlatma kayıtlarını döndürür ve kullanıcı yalnızca kendi kayıtlarını görür. Üretilen hatırlatmanın durumu `sent_mock` olur. Liste `remindOn` azalan, aynı tarihte `daysBefore` artan sıralanır. Başarılı yanıtlar `200`, tokensız çağrılar `401` döner.
 
 ### QA-REM-13 - Zamanlayıcı saati ve test edilebilirlik
 
@@ -522,9 +541,9 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 ### QA-REM-16 - Yenilemeden bir gün önce hatırlatma
 
 - **Tür:** Birim, entegrasyon
-- **Ön koşul/veri:** Aktif abonelik; yenileme tarihi yarın; bir günlük eşik için hatırlatma yok.
+- **Ön koşul/veri:** Aktif abonelik; yenileme tarihi yarın; aynı döngünün 3 günlük hatırlatması daha önce oluşturulmuş; 1 günlük hatırlatma henüz yok.
 - **Adımlar:** Hatırlatma üretimini sabit tarihle çalıştır.
-- **Beklenen:** Yenilemeden bir gün önce tek hatırlatma oluşur; yinelenen kayıt veya gönderim yapılmaz.
+- **Beklenen:** 1 günlük hatırlatma oluşturulur; önceki 3 günlük kayıt yinelenmez. Saf `due_reminders` fonksiyonu iki eşiği de vadesi gelmiş olarak döndürebilir; günlük iş, veritabanı benzersizliğiyle daha önce kaydedilmiş 3 günlük eşiği atlar.
 
 ### QA-REM-17 - Geç eklenen abonelikte yalnızca kalan hatırlatmalar
 
@@ -539,6 +558,13 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Ön koşul/veri:** Aktif abonelik, `startDate` ve `period` üzerinden hesaplanan yenileme günü geçmiş; o döngü için hatırlatma yok.
 - **Adımlar:** Günlük hatırlatma işini yenileme gününden sonraki tarihle çalıştır.
 - **Beklenen:** Geçmiş döngünün 3 veya 1 günlük eşikleri için hatırlatma üretilmez. API `nextRenewalDate` değerini yeni dönem için hesaplar; yeni döngünün eşikleri kendi `renewal_date` günlerinde değerlendirilir.
+
+### QA-REM-19 - Hatırlatma gününde 09:00'dan sonra abonelik ekleme
+
+- **Tür:** Birim, entegrasyon
+- **Ön koşul/veri:** Aylık yenileme tarihi 15 Kasım; günlük iş 09:00 Europe/Istanbul'da çalışır.
+- **Adımlar:** (a) Aboneliği 12 Kasım 09:00'dan sonra ekleyip 13 Kasım iş çalıştırmasını gözle. (b) Ayrı veride aboneliği 14 Kasım 09:00'dan sonra ekleyip 15 Kasım iş çalıştırmasını gözle.
+- **Beklenen:** (a) 3 günlük eşik, abonelik eklendiği gün iş zaten çalıştığı için 13 Kasım'daki sonraki çalışmada telafi edilir ve bir kez kaydedilir. (b) Yenileme günü geldiğinde 1 günlük eşik telafi edilmez; o döngü için hatırlatma üretilmez. Her durumda `(subscription_id, renewal_date, days_before)` tekilliği korunur.
 
 ## 6. OpenAPI, kalite kapısı ve regresyon
 
