@@ -1,19 +1,20 @@
-## Ne değişti?
-<!-- Kısa özet. -->
+## What changed?
+<!-- Short summary. -->
 
-## Bağlı issue
-Closes # <!-- PR işi bitiriyorsa Closes, yalnızca katkı veriyorsa Refs # yaz -->
+## Linked issue
+<!-- Pull requests into `develop` use "Refs #n"; the issue is closed by hand after the merge. "Closes #n" only closes an issue when the pull request is merged into `main`. -->
+Refs #
 
-## Sözleşme (OpenAPI) etkisi
-- [ ] Yok
-- [ ] Var: `api/openapi.yaml` dosyası bu PR'da güncellendi ve Spectral lint geçiyor
-- [ ] Kırıcı değişiklik (sürüm / mobil ekip bilgilendirildi)
+## API contract (OpenAPI) impact
+- [ ] None
+- [ ] Yes: `api/openapi.yaml` is updated in this pull request and Spectral lint passes
+- [ ] Breaking change (version / mobile team informed)
 
-## Kontrol listesi
-- [ ] Testler eklendi veya güncellendi, yerelde geçiyor
-- [ ] Test kapsamı %50'nin altına düşmedi
-- [ ] Tarih / durum geçişi mantığına dokunuldu mu? Evetse Lead Architect incelemesi iste
-- [ ] Gizli bilgi (şifre, token, anahtar) commit'e girmedi
-- [ ] Branch adı `feature/US-xx-kisa-ad` biçiminde
+## Checklist
+- [ ] Tests added or updated and passing locally
+- [ ] Test coverage did not drop below 50%
+- [ ] Does the change touch date or state transition logic? If yes, request a Lead Architect review
+- [ ] No secrets (passwords, tokens, keys) are committed
+- [ ] Branch name follows `feature/US-xx-short-name` (or `fix/`, `chore/`, `docs/`)
 
-## Ekran görüntüsü / not (varsa)
+## Screenshot / notes (if any)
