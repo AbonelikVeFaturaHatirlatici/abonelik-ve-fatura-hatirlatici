@@ -1,37 +1,41 @@
-# Katkı kuralları
+# Contributing
 
-## Branch'ler
+This is a short summary. The full workflow is in [`process/05-git-flow-and-repository-workflow.md`](process/05-git-flow-and-repository-workflow.md).
 
-| Branch | Amaç |
+## Branches
+
+| Branch | Purpose |
 |---|---|
-| `main` | Sprint teslimleri. Her teslim bir **tag** alır (`sprint-1`, `sprint-2`...). |
-| `develop` | Tamamlanan işlerin birleştiği entegrasyon branch'i. |
-| `feature/US-xx-kisa-ad` | Tek story, hata veya teknik görev. `develop`'tan açılır, `develop`'a döner. |
+| `main` | Sprint deliveries. Every delivery gets a **tag** (`sprint-1`, `sprint-2`, ...). |
+| `develop` | Integration branch where finished work is merged. |
+| `feature/US-xx-short-name` | One story, defect or technical task. Created from `develop`, merged back into `develop`. |
 
-Branch adı türleri: `feature/US-12-abonelik-ekle`, `fix/US-15-ay-sonu`, `chore/ci-kurulumu`. `release` ve `hotfix` branch'leri açılmaz.
+Branch name examples: `feature/US-12-add-subscription`, `fix/US-15-month-end`, `chore/ci-setup`. `release` and `hotfix` branches are not used.
 
-## Günlük akış
+## Daily workflow
 
-1. İş için bir **issue** aç (user story veya hata şablonu).
-2. `develop`'tan branch aç:
-```bash
+1. Open an **issue** for the work (user story or bug template).
+2. Create a branch from `develop`:
+
+   ```bash
    git checkout develop && git pull
-   git checkout -b feature/US-12-abonelik-ekle
-```
-3. Küçük commit'ler at. Mesaj: `feat: abonelik ekleme endpoint'i` (tür: feat, fix, test, docs, refactor, chore, ci). Issue bağlantısı PR açıklamasında yapılır.
-4. Pull request aç. **Hedef her zaman `develop`**: `gh pr create --base develop`. Şablonu doldur, issue'yu bağla: PR işi bitiriyorsa `Closes #12`, yalnızca katkı veriyorsa `Refs #12`.
-5. En az **1 takım arkadaşının onayı** gerekir. Yazar kendi PR'ını onaylayamaz. Yeni commit gelirse eski onay düşer.
-6. Birleştirdikten sonra branch'i sil.
+   git checkout -b feature/US-12-add-subscription
+   ```
 
-## Sprint teslimi
+3. Make small commits. Message format: `feat: add subscription endpoint` (types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `ci`). The issue is linked in the pull request description.
+4. Open a pull request. **The target is always `develop`**: `gh pr create --base develop`. Fill in the template and link the issue: use `Closes #12` if the pull request finishes the work, and `Refs #12` if it only contributes to it.
+5. At least **one teammate's approval** is required. The author cannot approve their own pull request. A new commit dismisses earlier approvals.
+6. Delete the branch after merging.
 
-1. Sprint sonunda `develop` → `main` PR'ı açılır (1 onay).
-2. Birleştikten sonra `main`'e tag atılır: `git tag sprint-1 && git push origin sprint-1`.
-3. Scrum Master teslim kanıtlarını toplar: takım, repo, tag, rol sahipleri, issue ve PR bağlantıları, belge linkleri.
+## Sprint delivery
 
-## Kurallar
+1. At the end of the sprint, a `develop` → `main` pull request is opened (1 approval).
+2. After the merge, `main` is tagged: `git tag sprint-1 && git push origin sprint-1`.
+3. The Scrum Master collects the delivery evidence: team, repository, tag, role owners, issue and pull request links, document links.
 
-- `main` ve `develop`'a doğrudan push yoktur. Force push ve branch silme kapalıdır.
-- Tarih hesabı, durum geçişleri ve `api/openapi.yaml` değişiklikleri Lead Architect incelemesinden geçer.
-- OpenAPI sözleşmesi koddan önce güncellenir (API-first).
-- Test kapsamı %50'nin altına düşmemelidir.
+## Rules
+
+- There are no direct pushes to `main` or `develop`. Force pushes and branch deletion are blocked.
+- Date calculations, state transitions and changes to `api/openapi.yaml` are reviewed by the Lead Architect.
+- The OpenAPI contract is updated before the code (API-first).
+- Test coverage must not fall below 50%.
