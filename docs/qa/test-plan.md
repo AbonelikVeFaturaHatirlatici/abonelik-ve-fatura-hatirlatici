@@ -15,9 +15,9 @@ Bu belge bir test planıdır, test sonucu raporu değildir. Senaryoların çalı
 
 Atanan US-03, US-05, US-06 ve US-08 için senaryo → beklenen HTTP sonucu → planlanan otomatik test eşlemesi [QA Test Senaryoları](test-cases.md#atanan-storyler-icin-izlenebilirlik) belgesinde yer alır. Eşleme görev ekranındaki gereksinimlere dayanır; planlanan testler henüz kodlanmış testler değildir.
 
-`origin/develop` `8aba13f` sürümünde OpenAPI 3.0.3 sözleşmesi, health/altyapı kodu, yenileme hesabı ve saf hatırlatma hesabı bulunur. Bu sürümde 25 mevcut birim/altyapı testi vardır; bunlar auth, abonelik veya hatırlatma HTTP endpoint'lerini sınamaz. API uygulaması henüz yalnızca `/health` endpoint'ini içerdiğinden bu plandaki API senaryoları çalıştırılamaz. Son sürümün kapsamı CI raporundan kaydedilmelidir.
+Güncel `develop` branch'inde OpenAPI 3.0.3 sözleşmesi, health/altyapı kodu, yenileme hesabı ve saf hatırlatma hesabı bulunur. Mevcut birim/altyapı testleri auth, abonelik veya hatırlatma HTTP endpoint'lerini sınamaz. API uygulaması henüz yalnızca `/health` endpoint'ini içerdiğinden bu plandaki API senaryoları çalıştırılamaz. Son sürümün kapsamı CI raporundan kaydedilmelidir.
 
-`origin/develop` `8aba13f` içindeki `backend/tests/test_renewal.py` ve `backend/tests/test_reminders.py` tarih ve saf hatırlatma hesabı testlerini içerir. Bu testler API endpoint'lerini kapsamaz. Ayrıntılı kapsam eşlemesi ve görülen boşluk [QA Test Senaryoları](test-cases.md) belgesinde yer alıyor.
+Güncel `develop` içindeki `backend/tests/test_renewal.py` ve `backend/tests/test_reminders.py` tarih ve saf hatırlatma hesabı testlerini içerir. Bu testler API endpoint'lerini kapsamaz. Ayrıntılı kapsam eşlemesi ve görülen boşluk [QA Test Senaryoları](test-cases.md) belgesinde yer alıyor.
 
 ## 2. Test kapsamı
 
@@ -83,7 +83,7 @@ Testler çalıştırıldığında her senaryonun durumu (PASS/FAIL/BLOCKED), uyg
 | AT-26 | QA-REM-08 |
 | AT-27 | QA-REM-07 |
 | AT-28 | QA-REM-12 |
-| AT-29 | Senaryo eklenmedi; test edilebilir kabul ölçütü netleştirilmeli |
+| AT-29 | QA-REM-20 |
 | AT-30 | QA-REM-19 |
 
 ## 5. Teste hazır olma ve kabul koşulları

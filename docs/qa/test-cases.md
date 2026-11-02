@@ -1,7 +1,7 @@
 # QA Test Senaryoları
 
 **İlgili plan:** [QA Test Planı](test-plan.md)  
-**Durum:** Bu belgedeki API senaryoları planlandı; endpoint uygulaması üzerinde henüz çalıştırılmadı. Güncel `origin/develop` (`8aba13f`) health, altyapı, yenileme ve hatırlatma birim testlerini içeriyor; API endpoint testleri henüz yok.
+**Durum:** Bu belgedeki API senaryoları planlandı; endpoint uygulaması üzerinde henüz çalıştırılmadı. Güncel `develop` health, altyapı, yenileme ve hatırlatma birim testlerini içeriyor; API endpoint testleri henüz yok.
 **Kaynak:** Teknik belge v4, `api/openapi.yaml`, US-01–US-10 issue'ları ve ders proje yönergesi
 
 Bu senaryolar, mevcut proje kuralları ve Architect/PO kararlarına göre hazırlanmıştır. Beklenen sonuçlar uygulama ve onaylı `api/openapi.yaml` ile doğrulanmadan kesin kabul kriteri sayılmaz. Kalan sözleşme uyumu ve uygulama doğrulamaları belgenin son bölümlerindedir. Bir test başarısız olursa gerçek sonuç, build/commit bilgisi ve kanıt ilgili issue/PR'a eklenmelidir.
@@ -39,7 +39,7 @@ US-03 için `400` ve US-05/US-06 için `404`/`409` görev ekranındaki kabul öl
 
 ## OpenAPI işlem → senaryo → otomatik test eşlemesi
 
-Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'inde bulunan `api/openapi.yaml` sürümüne göre hazırlandı. `origin/develop` sözleşmesi OpenAPI 3.0.3 kullanıyor. Aşağıdaki otomatik test adları önerilen eşlemelerdir; güncel `origin/develop` `36d0bcc` ağacında health, altyapı ve yenileme testleri mevcut. Abonelik, auth ve reminder endpoint uygulamaları ile bunların API testleri henüz bulunmuyor.
+Bu eşleme, yerel checkout'taki `main` değil, depodaki güncel `develop` branch'inde bulunan `api/openapi.yaml` sürümüne göre hazırlandı. `develop` sözleşmesi OpenAPI 3.0.3 kullanıyor. Aşağıdaki otomatik test adları önerilen eşlemelerdir; güncel `develop` ağacında health, altyapı, yenileme ve hatırlatma testleri mevcut. Abonelik, auth ve reminder endpoint uygulamaları ile bunların API testleri henüz bulunmuyor.
 
 | OpenAPI işlemi | Başarı senaryosu / yanıt | Hatalı girdi veya yetki senaryosu / yanıt | Çakışma / bulunamadı | Planlanan test eşlemesi |
 |---|---|---|---|---|
@@ -53,7 +53,7 @@ Bu eşleme, yerel checkout'taki `main` değil, depodaki `origin/develop` branch'
 
 Sözleşmede tanımlanmayan bir conflict yanıtı olan listeleme ve giriş işlemleri için conflict senaryosu eklenmedi. `401` yetkisiz erişimdir; `409` conflict yanıtları kayıt çakışması veya aboneliğin zaten iptal edilmiş olması için ayrı tutulmuştur.
 
-### Sözleşme uyum incelemesi (`origin/develop` `8aba13f`)
+### Güncel develop sözleşme uyum incelemesi
 
 OpenAPI 3.0.3 belgesi yapısal doğrulamadan geçti. Architect/PO kararlarının tümü sözleşmede açıkça temsil edilmiyor; API kodlanmadan önce Architect ile sözleşme sahibi şu noktaları eşleştirmelidir:
 
@@ -565,6 +565,13 @@ Bu bölüm saf tarih fonksiyonu için birim testlerini kapsar. Tarihlerin saat i
 - **Ön koşul/veri:** Aylık yenileme tarihi 15 Kasım; günlük iş 09:00 Europe/Istanbul'da çalışır.
 - **Adımlar:** (a) Aboneliği 12 Kasım 09:00'dan sonra ekleyip 13 Kasım iş çalıştırmasını gözle. (b) Ayrı veride aboneliği 14 Kasım 09:00'dan sonra ekleyip 15 Kasım iş çalıştırmasını gözle.
 - **Beklenen:** (a) 3 günlük eşik, abonelik eklendiği gün iş zaten çalıştığı için 13 Kasım'daki sonraki çalışmada telafi edilir ve bir kez kaydedilir. (b) Yenileme günü geldiğinde 1 günlük eşik telafi edilmez; o döngü için hatırlatma üretilmez. Her durumda `(subscription_id, renewal_date, days_before)` tekilliği korunur.
+
+### QA-REM-20 - Hatırlatma uç noktasında tanımlanmamış HTTP metotları
+
+- **Tür:** API, sözleşme
+- **Ön koşul/veri:** Güncel OpenAPI sözleşmesi ve geçerli kimlik doğrulaması.
+- **Adımlar:** `POST`, `PUT`, `PATCH` ve `DELETE` isteklerini `/reminders` uç noktasına ayrı ayrı gönder.
+- **Beklenen:** Her istek HTTP `405` döndürür. Yanıttaki `Allow` başlığı `GET` metodunu içerir. Yanıt gövdesi denetlenmez; sözleşme gövde biçimini garanti etmez.
 
 ## 6. OpenAPI, kalite kapısı ve regresyon
 
