@@ -3,13 +3,13 @@
 **Project:** Subscription Reminder Mobile Application
 **Course:** BM 321 / SENG 321 · Software Engineering Project · Sprint 2 · Team 11
 **Owner:** Zeynep Sude Develi (`zsudedeveli`), Product Owner and Requirements Engineer
-**Version / date:** 1.0 · 17 November 2026
+**Version / date:** 1.1 · 18 November 2026
 **Applies decisions:** D-03, D-19, D-23, D-24, D-26
-**Status:** Product Owner approved; the Figma prototype is built from this specification (task T-09)
+**Status:** Product Owner approved; the Figma prototype was built from this specification (task T-09)
 
 Related documents: [SRS](03-requirements.md) (use cases UC-01 to UC-09, UIR-01 to UIR-10) · [Backlog](06-product-backlog.md) (stories, screen criteria) · [Non-functional requirements](07-nonfunctional-requirements.md) (NFR-U1 to U5) · [Early screen drafts](ekran-taslaklari.md) (Sprint 1, PR #34; superseded by this document) · [`api/openapi.yaml`](../../api/openapi.yaml)
 
-**Figma file:** `https://www.figma.com/...` *(the view link is entered here by the Product Owner when the prototype is shared; the file must be set to "anyone with the link can view")*
+**Figma file:** [design file](https://www.figma.com/design/zLadyqszvs7lVNyQWzMO9A/Untitled) · [clickable prototype](https://www.figma.com/proto/zLadyqszvs7lVNyQWzMO9A/Untitled?node-id=1-215&p=f&t=BNO0PVdAVM6gcWR1-0&scaling=min-zoom&content-scaling=fixed&page-id=1%3A3&starting-point-node-id=1%3A215) (view-only, "anyone with the link can view"; starts at `S1-Giris-Default`)
 
 ---
 
@@ -529,13 +529,15 @@ Material Design 3 baseline for Android; Roboto; frame 360 × 800 dp; 8 dp spacin
 
 ### 8.1 Structure
 
+Figma's free plan allows three pages per file, so the five planned pages were combined into three. Connections of a prototype work only between frames of one page, so screens and prototype share a page.
+
 | Page | Content |
 |---|---|
-| 0 Cover | Project name, team, version, date, link to the repository, legend of the flow arrows |
-| 1 User flows | The diagrams of section 4 redrawn or imported: F1 to F6 and the end-to-end journey; every box labelled with screen and API operation |
-| 2 Design system | Tokens (colors, type, spacing) as Figma variables or styles; the components of section 7.3 as components with variants |
-| 3 Screens | One frame per screen state (list below), named `S<n>-<Name>-<State>`, 360 × 800 dp |
-| 4 Prototype | The connected flow with the starting frame "S1-Giris-Default" |
+| 0 Cover and design system | Design tokens (colors, type, spacing) as a sheet (`DS-Tokens`) |
+| 1 User flows | The diagrams of section 4 (F1 to F6, screen map and the end-to-end journey), imported from the PNG files in `flows/` |
+| 2 Screens and prototype | One frame per screen state (list below), 360 × 800 dp, and the connected prototype with the starting frame `S1-Giris-Default` |
+
+Frames are named as in the list below; Figma adds a numeric suffix to imported frames (for example `S1-Giris-Default 1`).
 
 ### 8.2 Frames to draw
 
@@ -575,7 +577,7 @@ The prototype must allow the usability tasks T1 to T5 (section 4.7) without leav
 - [ ] The removal dialog text and the button name are exactly as in UIR-03.
 - [ ] Touch targets are at least 48 × 48 dp; text contrast is at least 4.5 : 1 (checked with a contrast tool).
 - [ ] All connections of section 8.3 work in presentation mode from the first frame.
-- [ ] The file is shared with "anyone with the link can view"; the link is entered at the top of this document and in the Sprint 2 submission file.
+- [x] The file is shared with "anyone with the link can view"; the link is entered at the top of this document and in the Sprint 2 submission file.
 - [ ] The user-flow diagrams exist as PNG in `docs/product/flows/` (exported from the Mermaid sources of this document, so that they are in the repository history); the Figma page "1 User flows" shows the same flows.
 - [ ] A short PDF export of the screens is added to `docs/product/` if the instructor asks for files instead of a link.
 
@@ -595,5 +597,5 @@ The prototype must allow the usability tasks T1 to T5 (section 4.7) without leav
 |---|---|---|---|
 | 1 | The Implementation engineer confirms that the five-screen structure and the "register, then sign in automatically" step (F1) are feasible for the skeleton T-05 (the skeleton may start with S1 and S2). | Implementation | Sprint 2 review |
 | 2 | The Architect confirms that S5 can resolve service names from the subscription list (no contract change, see 5.5); if not, a contract change that adds `serviceName` to `Reminder` is proposed through the Architect. | Architect | Sprint 2 review |
-| 3 | The Figma view link is entered at the top of this document and in `docs/SPRINT-2-SUBMISSION.md`. | PO | 23 Nov 2026 |
+| 3 | The Figma view link is entered at the top of this document and in `docs/SPRINT-2-SUBMISSION.md`. | PO | Done (18 Nov 2026) |
 | 4 | Usability test with 5 participants on the prototype; results in `docs/qa/usability-test-sprint-2.md` (NFR-U1, U4). | PO, QA | 23 Nov 2026 |
