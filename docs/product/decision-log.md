@@ -2,7 +2,7 @@
 
 **Project:** Subscription Reminder Mobile Application
 **Decision maker:** Zeynep Sude Develi (`zsudedeveli`), Product Owner and Requirements Engineer
-**Decision date:** 31 October 2026
+**Decision dates:** 31 October 2026 (D-01 to D-22, Sprint 1) · 17 November 2026 (D-23 to D-27, Sprint 2)
 **Status key:** *Approved* = decided by the Product Owner. *Acknowledge* = the named role confirms in the pull request review that the decision is consistent with their artifact.
 
 ## 1. Decisions
@@ -31,19 +31,24 @@
 | D-20 | PO interview document v2 and Architecture v2 are **superseded** (they say "one reminder"). They stay unchanged as history and receive a revision note. | Keeps history; prevents a wrong rule from being read as current. | Approved | Architect | Revision notes |
 | D-21 | Scrum Master is Nesibe Sakar (`ynessakar`). The RACI document and the escalation guide replace "to be assigned" with this name. | Assigned in issue #24. | Approved | Scrum Master | Issue #24 |
 | D-22 | **Invoices and bills are out of scope** for the first release and may be added in a later release. The first release tracks subscriptions only. The repository name, which contains "fatura" (invoice), is kept (D-13). | Prevents readers of the repository name from expecting invoice features; keeps the first release small. | Approved | Scrum Master | Architect review of the Sprint 1 package |
+| D-23 | **Five screens** replace the three Sprint 1 drafts: S1 sign-in and registration, S2 subscription list, S3 subscription detail, S4 add subscription, S5 reminders. After a successful registration the app signs the user in automatically (the registration response contains no token). | The detail view (US-04) and the flat reminder list (US-09, D-08) need their own screens; the contract is unchanged. | Approved | Implementation, Architect | Sprint 2 prototype; user flows F1 to F6 |
+| D-24 | **Ending a session is client-side only.** "Çıkış Yap" deletes the stored token; a `401` on any call deletes the token and shows the sign-in screen with "Oturumunuz sona erdi. Lütfen tekrar giriş yapın." New story **US-11** (2 points, P2) and FR-14. No API operation is added. | A mobile application with sign-in needs sign-out and expired-token handling; the 24-hour JWT (ADR-004) makes expiry a normal case. | Approved | Architect (no contract change), Implementation | SRS FR-14; backlog US-11 |
+| D-25 | **Minimum platform: Android 10 or later**, verified on one emulator and one physical device. | Covers current devices and keeps the test effort small; the Implementation engineer confirms it against the Expo SDK in use. | Approved | Implementation | NFR-C1 |
+| D-26 | **Amount entry:** the user types the amount in lira with a decimal comma or point and at most two decimals; the client converts it to integer kuruş **without rounding** and shows amounts as `229,99 ₺`. Inputs with more than two decimals, zero, negative values or text are rejected on the device. | The contract takes integer kuruş (D-05); users think in lira. Rejecting instead of rounding avoids silent changes of a price. | Approved | Implementation, Architect | SRS FR-15 |
+| D-27 | **The quality requirements of `07-nonfunctional-requirements.md` are the quality bar of the first release**, with the measurable targets, methods and owners given there. A target that its owner cannot meet is changed only through a decision-log entry. | Fixes "good enough" in numbers (performance, reliability, security, usability, maintainability) before the MVP is built. | Approved | Architect, QA, DevOps | NFR document |
 
 ## 2. Product Owner approval record
 
-I, the Product Owner, approve the decisions D-01 to D-22 above, the requirements in [03-requirements.md](03-requirements.md), the scope in [02-system-vision-and-boundary.md](02-system-vision-and-boundary.md), and the behaviours of the API contract in [api/openapi.yaml](../../api/openapi.yaml) as the definition of the first release.
+I, the Product Owner, approve the decisions D-01 to D-27 above, the Software Requirements Specification in [03-requirements.md](03-requirements.md) (version 2.0), the quality requirements in [07-nonfunctional-requirements.md](07-nonfunctional-requirements.md), the refined backlog in [06-product-backlog.md](06-product-backlog.md) (version 2.0), the user flows and screen specification in [08-user-flows-and-prototype-spec.md](08-user-flows-and-prototype-spec.md), the scope in [02-system-vision-and-boundary.md](02-system-vision-and-boundary.md), and the behaviours of the API contract in [api/openapi.yaml](../../api/openapi.yaml) as the definition of the first release.
 
 | Item | Value |
 |---|---|
 | Approved by | Zeynep Sude Develi (`zsudedeveli`), Product Owner and Requirements Engineer |
-| Date | 31 October 2026 |
+| Date | 31 October 2026 (D-01 to D-22) and 17 November 2026 (D-23 to D-27, SRS 2.0, backlog 2.0, NFR 1.0, prototype specification 1.0) |
 | Evidence | This file, merged through a pull request with a non-author reviewer |
 | Contract note | The PO approves the *behaviour* in the contract. The contract itself remains owned by the Lead Architect; every change to it goes through the Architect. |
 
-## 3. Open items after these decisions
+## 3. Open items
 
 | # | Item | Owner | Status |
 |---|---|---|---|
@@ -53,3 +58,7 @@ I, the Product Owner, approve the decisions D-01 to D-22 above, the requirements
 | 4 | Three screen drafts and PO approval. | Implementation, PO | Done (PR #34) |
 | 5 | Ruleset and CI evidence for issue #20. | Architect | Done (`docs/process/evidence/`) |
 | 6 | Fill in the contribution table in the submission file after the last pull requests are merged. | Scrum Master, Architect | In progress |
+| 7 | Acknowledge D-23 to D-27 in the pull request review: D-23 and D-24 (Architect, Implementation), D-25 and D-26 (Implementation, Architect), D-27 (Architect, QA, DevOps). | Architect, Implementation, QA, DevOps | Open |
+| 8 | Re-open issue #16 (US-08) or open the child issue US-08b: the pull request of slice 1 closed it, but the story is not done (backlog section 4.2). | Architect | Open |
+| 9 | Create the milestones `Sprint-2` (due 24 November 2026) and `Sprint-3` (due 17 December 2026) and the issues for T-07 to T-13. | Scrum Master, PO | Open |
+| 10 | Move the Sprint 2 due date in `docs/process/sprint-schedule-and-impediment-log.md` from 26 to 24 November 2026 (instructor's announcement). | Scrum Master | Open |
