@@ -40,3 +40,24 @@ jobs:
           else
             echo "backend/ henüz yok, adım atlandı."
           fi
+
+  mobile-lint:
+    name: mobile-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+      - name: Lint ve tip kontrolü (mobile/ varsa)
+        run: |
+          if [ -f mobile/package.json ]; then
+            cd mobile
+            npm ci
+            npm run lint
+            npm run typecheck
+          else
+            echo "mobile/ henüz yok, adım atlandı."
+          fi
