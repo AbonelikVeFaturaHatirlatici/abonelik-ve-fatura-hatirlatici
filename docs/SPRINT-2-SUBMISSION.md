@@ -11,7 +11,7 @@ Submission deadline: 24 November 2026 · Sprint 2 weight: 20% · Sprint 1 submis
 | GitHub repository | https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici |
 | Sprint 2 release tag | `sprint2` → [release page](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint2) *(created by DevOps after `develop` is merged into `main`)* |
 | Sprint 1 release tag | `sprint1` → [release page](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint1) |
-| Figma prototype (view link) | *(enter the link; the file is shared with "anyone with the link can view")* |
+| Figma prototype (view link) | [Clickable prototype](https://www.figma.com/proto/zLadyqszvs7lVNyQWzMO9A/Untitled?node-id=1-215&p=f&t=BNO0PVdAVM6gcWR1-0&scaling=min-zoom&content-scaling=fixed&page-id=1%3A3&starting-point-node-id=1%3A215) · [Figma design file](https://www.figma.com/design/zLadyqszvs7lVNyQWzMO9A/Untitled) (view-only) |
 | License | MIT (`LICENSE`) |
 
 | Member | Role | GitHub |
@@ -29,7 +29,7 @@ Submission deadline: 24 November 2026 · Sprint 2 weight: 20% · Sprint 1 submis
 |---|---|---|---|---|
 | 1 | Detailed Software Requirements Specification (SRS) and refined Product Backlog | [`docs/product/03-requirements.md`](product/03-requirements.md) (SRS 2.0), [`docs/product/06-product-backlog.md`](product/06-product-backlog.md) (backlog 2.0), [`docs/product/decision-log.md`](product/decision-log.md) (D-01 to D-27) | Product Owner | Architect, QA |
 | 2 | Non-functional requirements and quality-measure specification | [`docs/product/07-nonfunctional-requirements.md`](product/07-nonfunctional-requirements.md) | Product Owner | Architect, QA, DevOps |
-| 3 | Figma UI/UX prototypes with user-flow diagrams | Figma view link (above); [`docs/product/08-user-flows-and-prototype-spec.md`](product/08-user-flows-and-prototype-spec.md) (user flows F1 to F6, five screens, text catalogue); usability test record [`docs/qa/usability-test-sprint-2.md`](qa/usability-test-sprint-2.md) | Product Owner | Implementation, QA |
+| 3 | Figma UI/UX prototypes with user-flow diagrams | Figma links (above); [`docs/product/08-user-flows-and-prototype-spec.md`](product/08-user-flows-and-prototype-spec.md) (user flows F1 to F6, five screens, text catalogue); usability test record [`docs/qa/usability-test-sprint-2.md`](qa/usability-test-sprint-2.md) | Product Owner | Implementation, QA |
 | 4 | Software architecture documentation: C4 model and UML diagrams | [`docs/architecture/`](architecture/) *(list the files: C4 levels 1 to 3 and the UML diagrams, entered by the Architect)*; [ADR-001 to ADR-004](adr/); [database schema](architecture/db-semasi.md) | Lead Architect | Product Owner, DevOps |
 | – | API contract (baseline from Sprint 1) | [`api/openapi.yaml`](../api/openapi.yaml) | Lead Architect | Product Owner |
 | – | QA test plan and scenarios | [`docs/qa/test-plan.md`](qa/test-plan.md), [`docs/qa/test-cases.md`](qa/test-cases.md) | QA | Product Owner |
