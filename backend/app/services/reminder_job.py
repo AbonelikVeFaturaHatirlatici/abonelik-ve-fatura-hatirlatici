@@ -10,7 +10,7 @@
    hatırlatma üretilmez.
 
 2. Gönderim: günü gelmiş (remind_on <= bugün), yenilemesi henüz geçmemiş
-   (renewal_date >= bugün) ve `created` durumundaki hatırlatmalar NotificationPort ile
+   (renewal_date > bugün) ve `created` durumundaki hatırlatmalar NotificationPort ile
    gönderilir ve `sent_mock` olarak işaretlenir. Önceki günlerde kaçırılanlar (ör. sunucu
    09:00'da kapalıydı) bir sonraki çalışmada gönderilir. İptal edilmiş aboneliğin daha önce
    üretilmiş hatırlatmaları listede kalır ama gönderilmez.
@@ -109,7 +109,7 @@ def _due_reminder_ids(db: Session, today: date) -> list[uuid.UUID]:
         .where(
             Reminder.status == REMINDER_STATUS_CREATED,
             Reminder.remind_on <= today,
-            Reminder.renewal_date >= today,
+            Reminder.renewal_date > today,
             Subscription.status == SUBSCRIPTION_STATUS_ACTIVE,
         )
         .order_by(Reminder.remind_on, Reminder.id)
