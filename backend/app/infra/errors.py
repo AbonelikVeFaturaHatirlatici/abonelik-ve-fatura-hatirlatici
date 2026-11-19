@@ -3,6 +3,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.infra.validation_messages import http_error_message, translate_errors
+
 
 class AppException(Exception):
     def __init__(
@@ -64,14 +66,14 @@ def register_error_handlers(app: FastAPI) -> None:
     async def validation_exception_handler(
         _: Request, exc: RequestValidationError
     ) -> JSONResponse:
-        # FastAPI'nin varsayılan 422 yanıtını sözleşmeye uygun 400 VALIDATION_ERROR'a dönüştür
-        first_error = exc.errors()[0] if exc.errors() else None
-        msg = "İstek gövdesi veya parametreler geçersiz."
-        if first_error and "msg" in first_error:
-            msg = f"{first_error['msg']} ({'.'.join(str(loc) for loc in first_error.get('loc', []))})"
+        # FastAPI'nin varsayılan 422 yanıtı sözleşmeye uygun 400 VALIDATION_ERROR'a,
+        # İngilizce Pydantic mesajı Türkçe kullanıcı mesajına çevrilir (D-19, NFR-C2).
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content={"code": "VALIDATION_ERROR", "message": msg},
+            content={
+                "code": "VALIDATION_ERROR",
+                "message": translate_errors(exc.errors()),
+            },
         )
 
     @app.exception_handler(StarletteHTTPException)
@@ -89,19 +91,13 @@ def register_error_handlers(app: FastAPI) -> None:
         elif exc.status_code == status.HTTP_400_BAD_REQUEST:
             code = "BAD_REQUEST"
 
+        # Starlette'in İngilizce varsayılan metni ("Not Found") Türkçeye çevrilir;
+        # `headers` korunur: 405 yanıtı `Allow` başlığını taşımalıdır (SRS 3.4.1).
         return JSONResponse(
             status_code=exc.status_code,
-            content={"code": code, "message": str(exc.detail)},
-        )
-
-    @app.exception_handler(Exception)
-    async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
-        # Beklenmeyen hatalar da tek şemayla döner; ayrıntı istemciye sızdırılmaz.
-        # Starlette hatayı bu yanıttan sonra yeniden yükseltir, böylece sunucu günlüğüne düşer.
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
-                "code": "INTERNAL_ERROR",
-                "message": "Beklenmeyen bir hata oluştu.",
+                "code": code,
+                "message": http_error_message(exc.status_code, exc.detail),
             },
+            headers=getattr(exc, "headers", None),
         )
