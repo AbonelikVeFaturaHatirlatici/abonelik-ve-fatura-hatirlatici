@@ -149,48 +149,78 @@ flowchart TB
 | NotificationPort / MockNotifier | Mock record instead of real push; if real push is added, only the adapter changes | ADR-002 |
  
 ## Level 3: Components (Mobile app)
- 
-The inside of the Android app (React Native + Expo, TypeScript). In Sprint 2 the screens are built from the Figma mockups (S2-04, S2-05).
- 
+
+The inside of the Android app (React Native + Expo, TypeScript, `mobile/`). The app has five screens (D-23): S1 sign-in and registration, S2 subscription list, S3 subscription detail, S4 add subscription, S5 reminders. S2 and S5 are tabs of one main view with a bottom bar; S1, S3 and S4 are full screens. The screens follow the Figma prototype (S2-04) and `docs/product/08-user-flows-and-prototype-spec.md`.
+
+Status note: The screens, navigation and state are built (S2-05). The data layer currently returns mock data (`mockApi`). The HTTP client generated from `api/openapi.yaml` and token storage in Expo SecureStore are planned for S2-06.
+
 ```mermaid
 flowchart TB
     user["<b>User</b>"]
     api["<b>Backend API</b><br/>(10.0.2.2:8000 in the emulator)"]
- 
-    subgraph mobile["Mobile app (mobile/)"]
-        nav["<b>Navigation</b><br/>moves between the 3 screens"]
-        subgraph screens["Screens"]
-            login["<b>Login and register</b>"]
-            list["<b>Subscription list</b><br/>reminder label: sent (mock)"]
-            add["<b>Add subscription</b><br/>cancel confirmation warning"]
+
+    subgraph mobile["Mobile app (mobile/src)"]
+        subgraph nav["Navigation"]
+            root["<b>RootNavigator</b><br/>no session: S1 only<br/>session: Main, S3, S4"]
+            tabs["<b>MainTabs</b><br/>S2 and S5 tabs, bottom bar,<br/>overflow menu (sign out)"]
         end
-        client["<b>Typed API client</b><br/>generated from openapi.yaml"]
-        storage["<b>Token storage</b><br/>Expo SecureStore (JWT)"]
-        errorMap["<b>Error mapping</b><br/>{ code, message } → Turkish message"]
+
+        subgraph screens["Screens"]
+            s1["<b>S1 Sign-in and registration</b>"]
+            s2["<b>S2 Subscription list</b>"]
+            s3["<b>S3 Subscription detail</b><br/>remove from tracking (warning)"]
+            s4["<b>S4 Add subscription</b>"]
+            s5["<b>S5 Reminders</b><br/>label: sent (mock)"]
+        end
+
+        subgraph state["State"]
+            authCtx["<b>AuthContext</b><br/>token, sign in, register,<br/>sign out, session expired"]
+            dataCtx["<b>DataContext</b><br/>subscriptions and reminders,<br/>loading and error states"]
+        end
+
+        subgraph dataLayer["Data layer (mobile/src/data)"]
+            client["<b>API client</b><br/>api.ts<br/>S2-05: mockApi, S2-06: HTTP client<br/>generated from openapi.yaml"]
+            errorMap["<b>Error mapping</b><br/>apiError.ts<br/>{ code, message } to Turkish text"]
+        end
+
+        helpers["<b>Helpers</b><br/>validation, formatting (kuruş to TL),<br/>text catalogue, renewal date"]
+        storage["<b>Token storage</b><br/>Expo SecureStore (JWT)<br/>planned, S2-06"]
     end
- 
-    user -->|"taps, fills in forms"| login
-    user -->|"taps"| list
-    user -->|"taps, fills in forms"| add
-    nav --- login
-    nav --- list
-    nav --- add
-    login -->|"e-mail, password"| client
-    list -->|"list and cancel calls"| client
-    add -->|"new subscription data"| client
-    client -->|"read, write token"| storage
+
+    user -->|"taps, fills in forms"| screens
+    root --- tabs
+    root --- s1
+    root --- s3
+    root --- s4
+    tabs --- s2
+    tabs --- s5
+
+    s1 -->|"e-mail, password"| authCtx
+    s2 -->|"list, open detail"| dataCtx
+    s3 -->|"cancel"| dataCtx
+    s4 -->|"new subscription data"| dataCtx
+    s5 -->|"reminder list"| dataCtx
+    screens -->|"form checks, formatting"| helpers
+
+    authCtx -->|"register, login"| client
+    dataCtx -->|"list, create, cancel, reminders"| client
+    authCtx -.->|"read, write token"| storage
     client -->|"HTTPS, JSON, Bearer JWT"| api
     client -->|"error body"| errorMap
     errorMap -->|"text to show the user"| screens
+    client -.->|"401: end the session"| authCtx
 ```
- 
+
 | Component | Responsibility |
 |---|---|
-| Navigation | Moves between the login, list and add screens |
-| Screens | Show the empty, filled and error states; do not make network calls on their own |
-| Typed API client | Types are generated from the contract (never edited by hand); all network calls go through it |
-| Token storage | The JWT is kept in secure storage on the device |
+| RootNavigator | Shows only S1 without a session; with a session it shows the main view, S3 and S4. After sign-out or a `401` it returns to S1 and the back button does not return to data screens (flow F6) |
+| MainTabs | Hosts S2 and S5 with the bottom bar and the overflow menu; the bottom bar is hidden on S1, S3 and S4 |
+| Screens | Show the empty, filled and error states; do not call the API directly, they use the contexts |
+| AuthContext | Holds the session token; registration signs the user in automatically (D-23); a `401` ends the session with "Oturumunuz sona erdi." (D-24) |
+| DataContext | Holds the subscription and reminder lists and their loading and error states |
+| API client | The single place for network calls; the types come from the contract and are never edited by hand |
 | Error mapping | Turns errors such as 400, 401 and 409 into Turkish messages (D-19) |
- 
+| Helpers | Form validation, amount entry in lira converted to integer kuruş without rounding (D-26), amount display as `229,99 ₺`, renewal date for display |
+| Token storage | The JWT is kept in secure storage on the device (NFR-S5); in S2-05 it is only in memory |
+
 These diagrams are consistent with the class and sequence diagrams in `docs/architecture/uml.md`. Class names are the same as in the domain module.
- 
