@@ -15,8 +15,14 @@ if config.config_file_name is not None:
 # Model metadata'sını Alembic'e bağla
 target_metadata = Base.metadata
 
-# Ortam değişkeninden gelen URL'i öncelikli yap
-config.set_main_option("sqlalchemy.url", get_sqlalchemy_url(settings.DATABASE_URL))
+# Ortam değişkeninden gelen URL'i öncelikli yap.
+# configparser '%' karakterini özel yorumlar; şifrede % varsa kaçırılmazsa Alembic çöker.
+config.set_main_option(
+    "sqlalchemy.url", get_sqlalchemy_url(settings.DATABASE_URL).replace("%", "%%")
+)
+
+# Autogenerate sütun tipi ve sunucu varsayılanı (ör. gen_random_uuid()) farklarını da görsün.
+COMPARE_OPTIONS = {"compare_type": True, "compare_server_default": True}
 
 
 def run_migrations_offline() -> None:
@@ -27,6 +33,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        **COMPARE_OPTIONS,
     )
 
     with context.begin_transaction():
@@ -42,7 +49,9 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection, target_metadata=target_metadata, **COMPARE_OPTIONS
+        )
 
         with context.begin_transaction():
             context.run_migrations()

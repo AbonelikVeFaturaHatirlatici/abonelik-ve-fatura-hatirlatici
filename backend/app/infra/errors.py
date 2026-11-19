@@ -93,3 +93,12 @@ def register_error_handlers(app: FastAPI) -> None:
             status_code=exc.status_code,
             content={"code": code, "message": str(exc.detail)},
         )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+        # Beklenmeyen hatalar da tek şemayla döner; ayrıntı istemciye sızdırılmaz.
+        # Starlette hatayı bu yanıttan sonra yeniden yükseltir, böylece sunucu günlüğüne düşer.
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"code": "INTERNAL_ERROR", "message": "Beklenmeyen bir hata oluştu."},
+        )
