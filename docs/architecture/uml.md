@@ -225,7 +225,31 @@ stateDiagram-v2
 
 ## 4. Deployment diagram
 
-This section will be added by Ahmet in S2-12.
+Docker Compose (`api` and `db` containers) on the host machine and the React Native (Expo) mobile app running on the Android Emulator ([ADR-001](../adr/ADR-001-moduler-monolit.md), [ADR-004](../adr/ADR-004-teknoloji-secimi.md)).
+
+```mermaid
+flowchart LR
+    subgraph Emulator["Android Emulator"]
+        Mobile["Mobile App (React Native + Expo)\nExpo SecureStore (JWT)"]
+    end
+
+    subgraph Host["Host Machine (Docker Compose)"]
+        API["Container: abonelik_api (api)\nFastAPI + Uvicorn + APScheduler\nPort: 8000:8000"]
+        DB[("Container: abonelik_db (db)\nPostgreSQL 16-alpine\nPort: 5432:5432")]
+        BindMount["./backend -> /app\n(backend/.env)"]
+        PgVolume[("Volume: postgres_data\n-> /var/lib/postgresql/data")]
+    end
+
+    Mobile -->|"HTTP / JSON (Bearer JWT)\nhttp://10.0.2.2:8000"| API
+    API -->|"SQLAlchemy / TCP\npostgresql://db:5432/abonelik"| DB
+    BindMount -.-> API
+    DB -.-> PgVolume
+```
+
+Notes:
+- The Android Emulator reaches the host machine's port `8000` via `http://10.0.2.2:8000`.
+- `api` waits for `db` (`pg_isready` healthcheck) and runs `alembic upgrade head` on startup.
+- Runtime configuration is read from `backend/.env` (template: `backend/.env.example` with `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRE_MINUTES`, `TZ=Europe/Istanbul`).
 
 ## Related documents
 - Decision records: [ADR-001](../adr/ADR-001-moduler-monolit.md), [ADR-002](../adr/ADR-002-hatirlatma-uretimi.md), [ADR-003](../adr/ADR-003-para-ve-tarih.md), [ADR-004](../adr/ADR-004-teknoloji-secimi.md)
