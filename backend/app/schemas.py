@@ -10,8 +10,9 @@
 - Doğrulama hataları app/infra/errors.py tarafından 400 VALIDATION_ERROR'a çevrilir.
 - Zaman damgaları yanıtta her zaman UTC'ye çevrilir ("Z" sonekiyle yazılır).
 """
+
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import Enum
 from typing import Annotated, Any, Literal
 
@@ -44,8 +45,8 @@ def _domain_error(exc: DomainValidationError) -> PydanticCustomError:
 def _to_utc(value: datetime) -> datetime:
     """timestamptz değerini UTC'ye çevirir; saat dilimsiz değer UTC kabul edilir."""
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 UtcDatetime = Annotated[datetime, AfterValidator(_to_utc)]

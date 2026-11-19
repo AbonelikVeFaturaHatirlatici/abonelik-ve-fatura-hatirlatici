@@ -11,7 +11,9 @@ class Settings:
     JWT_EXPIRE_MINUTES: int = int(os.getenv("JWT_EXPIRE_MINUTES", "1440"))
     TZ: str = os.getenv("TZ", "Europe/Istanbul")
     # Günlük hatırlatma zamanlayıcısı; testlerde veya ikinci bir API kopyasında "false" yapılır.
-    SCHEDULER_ENABLED: bool = os.getenv("SCHEDULER_ENABLED", "true").strip().lower() in (
+    SCHEDULER_ENABLED: bool = os.getenv(
+        "SCHEDULER_ENABLED", "true"
+    ).strip().lower() in (
         "1",
         "true",
         "yes",

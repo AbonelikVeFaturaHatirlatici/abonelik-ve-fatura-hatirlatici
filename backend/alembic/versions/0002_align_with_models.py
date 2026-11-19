@@ -36,7 +36,12 @@ UUID_PK_TABLES = ("users", "subscriptions", "reminders")
 
 # (tablo, sütun, modeldeki ad, PostgreSQL'in 0001'de verdiği varsayılan ad)
 FOREIGN_KEYS = (
-    ("subscriptions", "user_id", "fk_subscriptions_user_id", "subscriptions_user_id_fkey"),
+    (
+        "subscriptions",
+        "user_id",
+        "fk_subscriptions_user_id",
+        "subscriptions_user_id_fkey",
+    ),
     (
         "reminders",
         "subscription_id",
@@ -102,9 +107,11 @@ def _run_prechecks() -> None:
 
 def _foreign_key_name(table: str, column: str) -> str:
     """İlgili sütundaki FK'nin veritabanındaki gerçek adı."""
-    return op.get_bind().execute(
-        sa.text(
-            """
+    return (
+        op.get_bind()
+        .execute(
+            sa.text(
+                """
             SELECT c.conname
             FROM pg_constraint c
             JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
@@ -112,9 +119,11 @@ def _foreign_key_name(table: str, column: str) -> str:
               AND c.conrelid = to_regclass(:table)
               AND a.attname = :column
             """
-        ),
-        {"table": table, "column": column},
-    ).scalar_one()
+            ),
+            {"table": table, "column": column},
+        )
+        .scalar_one()
+    )
 
 
 def _rename_foreign_key(table: str, column: str, new_name: str) -> None:
@@ -127,7 +136,9 @@ def upgrade() -> None:
     _run_prechecks()
 
     # Mevcut veriyi yeni kurallara getir (kontroller çakışma olmadığını doğruladı).
-    op.execute("UPDATE users SET email = lower(btrim(email)) WHERE email <> lower(btrim(email))")
+    op.execute(
+        "UPDATE users SET email = lower(btrim(email)) WHERE email <> lower(btrim(email))"
+    )
     op.execute(
         "UPDATE subscriptions SET service_name = btrim(service_name) "
         "WHERE service_name <> btrim(service_name)"
@@ -136,7 +147,9 @@ def upgrade() -> None:
     # users
     op.drop_index("ix_users_email", table_name="users")
     op.create_unique_constraint("uq_users_email", "users", ["email"])
-    op.create_check_constraint("chk_users_email_lowercase", "users", "email = lower(email)")
+    op.create_check_constraint(
+        "chk_users_email_lowercase", "users", "email = lower(email)"
+    )
 
     # subscriptions
     op.create_check_constraint(
@@ -178,7 +191,9 @@ def downgrade() -> None:
     op.drop_constraint(
         "chk_subscriptions_cancelled_at_consistency", "subscriptions", type_="check"
     )
-    op.drop_constraint("chk_subscriptions_service_name_trimmed", "subscriptions", type_="check")
+    op.drop_constraint(
+        "chk_subscriptions_service_name_trimmed", "subscriptions", type_="check"
+    )
 
     op.drop_constraint("chk_users_email_lowercase", "users", type_="check")
     op.drop_constraint("uq_users_email", "users", type_="unique")

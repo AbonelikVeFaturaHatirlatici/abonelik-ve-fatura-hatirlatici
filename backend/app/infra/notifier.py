@@ -4,6 +4,7 @@
 Gönderilen hatırlatma veritabanında `sent_mock` olarak işaretlenir (sözleşme:
 "sent_mock = mock bildirim gönderildi"). Günlüğe kişisel veri (e-posta) yazılmaz.
 """
+
 import logging
 
 from app.domain.notifications import ReminderNotification

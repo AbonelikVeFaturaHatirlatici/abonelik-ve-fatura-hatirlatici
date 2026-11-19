@@ -1,5 +1,6 @@
 # Dosya: backend/app/services/reminders.py
 """Üretilmiş hatırlatmaları salt okunur listeleme (senkron oturum)."""
+
 import uuid
 
 from sqlalchemy import select

@@ -1,5 +1,6 @@
 # Dosya: backend/app/infra/db_errors.py
 """Veritabanı hatalarından hangi kısıtın ihlal edildiğini okur (psycopg2)."""
+
 from sqlalchemy.exc import IntegrityError
 
 

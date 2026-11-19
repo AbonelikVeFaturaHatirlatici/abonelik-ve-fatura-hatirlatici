@@ -40,7 +40,9 @@ def normalize_service_name(service_name: str) -> str:
 
 def validate_amount_kurus(amount_kurus: int) -> int:
     if amount_kurus < AMOUNT_KURUS_MIN:
-        raise DomainValidationError("amountKurus", "amountKurus sıfırdan büyük olmalıdır.")
+        raise DomainValidationError(
+            "amountKurus", "amountKurus sıfırdan büyük olmalıdır."
+        )
     if amount_kurus > AMOUNT_KURUS_MAX:
         raise DomainValidationError(
             "amountKurus", f"amountKurus en fazla {AMOUNT_KURUS_MAX} olabilir."

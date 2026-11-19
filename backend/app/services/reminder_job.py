@@ -1,4 +1,4 @@
-    # Dosya: backend/app/services/reminder_job.py
+# Dosya: backend/app/services/reminder_job.py
 """Günlük hatırlatma işi (her gün 09:00 Europe/Istanbul; zamanlama: infra/scheduler.py).
 
 İki aşama, her biri tekrar çalıştırılabilir (idempotent):
@@ -19,6 +19,7 @@ Her hatırlatma ayrı bir işlemde `FOR UPDATE SKIP LOCKED` ile kilitlenir; bird
 aynı anda çalışsa bile bir hatırlatma iki kez gönderilmez. Gönderim başarısız olursa kayıt
 `created` kalır ve sonraki çalışmada yeniden denenir.
 """
+
 import logging
 import uuid
 from collections.abc import Callable, Iterator
@@ -31,7 +32,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.notifications import NotificationPort, ReminderNotification
 from app.domain.reminders import due_reminders
-from app.domain.renewal import Period, next_renewal
+from app.domain.renewal import Period
 from app.infra.clock import today_local
 from app.infra.db import SessionLocal
 from app.infra.models import (
@@ -57,7 +58,12 @@ class ReminderJobResult:
 
 def _planned_rows(db: Session, today: date) -> Iterator[dict]:
     stmt = (
-        select(Subscription.id, Subscription.start_date, Subscription.period, Subscription.created_at)
+        select(
+            Subscription.id,
+            Subscription.start_date,
+            Subscription.period,
+            Subscription.created_at,
+        )
         .where(Subscription.status == SUBSCRIPTION_STATUS_ACTIVE)
         .execution_options(yield_per=_INSERT_BATCH_SIZE)
     )
@@ -175,7 +181,9 @@ def run_daily_reminder_job(
     with session_factory() as db:
         generated = generate_reminders(db, run_date)
         sent, failed = dispatch_due_reminders(db, notifier, run_date)
-    result = ReminderJobResult(run_date=run_date, generated=generated, sent=sent, failed=failed)
+    result = ReminderJobResult(
+        run_date=run_date, generated=generated, sent=sent, failed=failed
+    )
     logger.info(
         "Günlük hatırlatma işi tamamlandı: tarih=%s uretilen=%d gonderilen=%d basarisiz=%d",
         result.run_date.isoformat(),

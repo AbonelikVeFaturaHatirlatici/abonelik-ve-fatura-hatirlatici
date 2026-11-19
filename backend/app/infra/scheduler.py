@@ -10,6 +10,7 @@
   çalışmada birleşir. 09:00 en fazla `misfire_grace_time` kadar kaçırıldıysa iş yine
   çalışır; daha uzun kesintide günü gelmiş hatırlatmalar bir sonraki 09:00'da gönderilir.
 """
+
 import logging
 from collections.abc import Callable
 

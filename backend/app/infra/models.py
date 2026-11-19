@@ -11,6 +11,7 @@ Sözleşmede ödeme/fatura varlığı yoktur ve AGENTS.md bölüm 2'ye göre kap
 - Tüm kısıt, indeks ve yabancı anahtar adları açıkça verilmiştir; Alembic autogenerate
   her ortamda aynı adları üretir.
 """
+
 import uuid
 from datetime import date, datetime
 

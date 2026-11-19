@@ -7,6 +7,7 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+
 from app.api.openapi_meta import DESCRIPTION, SERVERS, TAGS
 from app.api.routes import auth, reminders, subscriptions
 from app.infra.config import settings
@@ -26,7 +27,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         daily_job = partial(run_daily_reminder_job, notifier=MockNotifier())
         scheduler = create_scheduler(daily_job)
         scheduler.start()
-        logger.info("Hatırlatma zamanlayıcısı başlatıldı (her gün 09:00 %s)", settings.TZ)
+        logger.info(
+            "Hatırlatma zamanlayıcısı başlatıldı (her gün 09:00 %s)", settings.TZ
+        )
     try:
         yield
     finally:

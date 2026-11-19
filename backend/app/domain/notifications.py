@@ -4,6 +4,7 @@
 Sprint 1'de gerçek push bildirimi kapsam dışıdır; port'u `infra.notifier.MockNotifier`
 uygular. Gerçek bir sağlayıcı ileride yalnızca bu port'u uygulayarak eklenir.
 """
+
 import uuid
 from dataclasses import dataclass
 from datetime import date

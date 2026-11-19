@@ -4,6 +4,7 @@
 Hata kodları ve mesajları, çalışma anında kullanılan sabitlerden alınır; dokümandaki
 örnek ile API'nin gerçekten döndürdüğü kod hiçbir zaman birbirinden ayrışmaz.
 """
+
 from typing import Any
 
 from app import schemas
@@ -16,7 +17,9 @@ def error_response(description: str, code: str, message: str) -> dict[str, Any]:
     return {
         "model": schemas.Error,
         "description": description,
-        "content": {"application/json": {"example": {"code": code, "message": message}}},
+        "content": {
+            "application/json": {"example": {"code": code, "message": message}}
+        },
     }
 
 

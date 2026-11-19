@@ -3,6 +3,7 @@
 Kural: her yenileme BAŞLANGIÇ tarihinden hesaplanır, bir önceki yenilemeden değil.
 Ayda o gün yoksa ayın son günü kullanılır (31 Ocak -> 28 Şubat -> 31 Mart).
 """
+
 import calendar
 from datetime import date
 from enum import Enum

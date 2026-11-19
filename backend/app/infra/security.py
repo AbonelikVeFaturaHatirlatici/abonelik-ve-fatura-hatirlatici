@@ -1,5 +1,6 @@
 # Dosya: backend/app/infra/security.py
 """Şifre özeti (argon2) ve JWT üretimi/doğrulaması."""
+
 import uuid
 from datetime import timedelta
 

@@ -3,6 +3,7 @@
 
 Başkasına ait kayıt her sorguda `user_id` filtresiyle elenir ve 404 döner (403 değil).
 """
+
 import uuid
 from datetime import date
 
@@ -23,7 +24,6 @@ from app.infra.errors import ConflictError, NotFoundError, ValidationError
 from app.infra.models import (
     SUBSCRIPTION_STATUS_ACTIVE,
     SUBSCRIPTION_STATUS_CANCELLED,
-    Reminder,
     Subscription,
 )
 
@@ -98,8 +98,7 @@ def create_subscription(
         start_date=data.start_date,
         status=SUBSCRIPTION_STATUS_ACTIVE,
     )
-    renewal = next_renewal(data.start_date, data.period, today)
-   
+
     db.add(subscription)
     try:
         db.commit()

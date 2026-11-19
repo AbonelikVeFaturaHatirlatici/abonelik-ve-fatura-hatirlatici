@@ -1,5 +1,6 @@
 # Dosya: backend/app/services/auth.py
 """Kayıt ve giriş iş akışı (senkron oturum)."""
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -17,7 +18,10 @@ from app.infra.security import (
     verify_password_against_dummy,
 )
 
-EMAIL_ALREADY_REGISTERED = ("EMAIL_ALREADY_REGISTERED", "Bu e-posta ile kayıtlı bir hesap var.")
+EMAIL_ALREADY_REGISTERED = (
+    "EMAIL_ALREADY_REGISTERED",
+    "Bu e-posta ile kayıtlı bir hesap var.",
+)
 INVALID_CREDENTIALS = ("INVALID_CREDENTIALS", "E-posta veya şifre hatalı.")
 
 

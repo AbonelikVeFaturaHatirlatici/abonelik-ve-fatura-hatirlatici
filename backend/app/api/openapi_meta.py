@@ -3,6 +3,7 @@
 
 Metinler api/openapi.yaml'dan birebir alınmıştır; sözleşme değişirse burası da güncellenir.
 """
+
 from typing import Any
 
 DESCRIPTION = """\
@@ -23,7 +24,10 @@ istemci hatırlatma oluşturamaz.
 """
 
 SERVERS: list[dict[str, str]] = [
-    {"url": "http://localhost:8000", "description": "Yerel geliştirme (docker compose)"},
+    {
+        "url": "http://localhost:8000",
+        "description": "Yerel geliştirme (docker compose)",
+    },
 ]
 
 TAGS: list[dict[str, str]] = [

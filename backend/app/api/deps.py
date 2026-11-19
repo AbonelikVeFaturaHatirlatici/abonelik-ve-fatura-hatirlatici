@@ -1,5 +1,6 @@
 # Dosya: backend/app/api/deps.py
 """Router bağımlılıkları: veritabanı oturumu, oturum açmış kullanıcı, bugünün tarihi."""
+
 import uuid
 from datetime import date
 from typing import Annotated
@@ -18,7 +19,9 @@ UNAUTHORIZED_MESSAGE = "Geçerli bir oturum gerekli."
 
 # Şema adı sözleşmedeki `bearerAuth` ile aynı. auto_error=False: eksik başlıkta FastAPI'nin
 # kendi hatası yerine sözleşmedeki 401 UNAUTHORIZED gövdesi döner.
-bearer_scheme = HTTPBearer(scheme_name="bearerAuth", bearerFormat="JWT", auto_error=False)
+bearer_scheme = HTTPBearer(
+    scheme_name="bearerAuth", bearerFormat="JWT", auto_error=False
+)
 
 DbSession = Annotated[Session, Depends(get_db)]
 

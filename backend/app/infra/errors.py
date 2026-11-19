@@ -100,5 +100,8 @@ def register_error_handlers(app: FastAPI) -> None:
         # Starlette hatayı bu yanıttan sonra yeniden yükseltir, böylece sunucu günlüğüne düşer.
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"code": "INTERNAL_ERROR", "message": "Beklenmeyen bir hata oluştu."},
+            content={
+                "code": "INTERNAL_ERROR",
+                "message": "Beklenmeyen bir hata oluştu.",
+            },
         )

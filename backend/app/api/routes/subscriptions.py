@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Body, Path, status
 from typing import Annotated
+
+from fastapi import APIRouter, Body, Path, status
+
 from app import schemas
 from app.api.deps import CurrentUser, DbSession, Today, parse_subscription_id
 from app.api.openapi_meta import SUBSCRIPTION_CREATE_EXAMPLES
