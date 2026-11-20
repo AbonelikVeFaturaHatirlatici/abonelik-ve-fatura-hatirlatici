@@ -41,12 +41,12 @@ Limits of this test: five participants, all aged 18 to 22; three of them have fi
 
 ## 4. Problems found and actions
 
-| # | Problem | Severity (high / medium / low) | Action (issue link) |
+| # | Problem | Severity (high / medium / low) | Action |
 |---|---|---|---|
-| 1 | P1 gave a wrong next renewal date (T3): 1 of 5. | medium | Make the next renewal date more prominent on the card (larger or bold) and ask P1 what was unclear. Re-test in Sprint 3. (issue: *to be opened, label `usability`*) |
-| 2 | P5 completed T1 with difficulty, needed help at T2 and said that some things could not be done. | medium | Ask P5 which step was hard. If it was the missing typing, record it as a limit of the prototype; if it was the registration, check the screen S1 again. (issue: *to be opened, label `usability`*) |
-| 3 | The self-reported times are not reliable (1 to 10 s). | medium | Repeat the time measurement with a moderator and a stopwatch on the application in Sprint 3 (QA). (issue: *to be opened, label `usability`*) |
-| 4 | Contrast below 4.5 : 1 in four color pairs: status text "Aktif" and "Hatırlatıldı" (`color/success` on white 4.37, on its chip 4.07), selected tab text (`color/primary` on `#DBE4FF` 4.47), text of removed cards (`color/muted` 3.32). | low | Use the corrected values in section 7.4 of the prototype specification in the application. (issue: *to be opened, label `usability`*) |
+| 1 | P1 gave a wrong next renewal date (T3): 1 of 5. | medium | Make the next renewal date more prominent on the card (larger or bold) and ask P1 what was unclear. Re-test in Sprint 3. |
+| 2 | P5 completed T1 with difficulty, needed help at T2 and said that some things could not be done. | medium | Ask P5 which step was hard. If it was the missing typing, record it as a limit of the prototype; if it was the registration, check the screen S1 again. Follow-up in Sprint 3. |
+| 3 | The self-reported times are not reliable (1 to 10 s). | medium | Repeat the time measurement with a moderator and a stopwatch on the application in Sprint 3 (QA). |
+| 4 | Contrast below 4.5 : 1 in four color pairs: status text "Aktif" and "Hatırlatıldı" (`color/success` on white 4.37, on its chip 4.07), selected tab text (`color/primary` on `#DBE4FF` 4.47), text of removed cards (`color/muted` 3.32). | low | Use the corrected values in section 7.4 of the prototype specification in the application. Follow-up in Sprint 3. |
 | 5 | The link "Giriş Yap" in the frame `S1-Kayit-EmailTaken` has a touch area of 44 dp (target 48 dp). | low | Enlarge the touch area to 48 dp in the application. |
 
 ## 5. Conclusion
