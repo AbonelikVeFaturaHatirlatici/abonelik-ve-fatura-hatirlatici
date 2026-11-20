@@ -1,3 +1,7 @@
+> **Revision note (20 November 2026).** This document contains the three Sprint 1 screen drafts. It is **superseded** by [08-user-flows-and-prototype-spec.md](08-user-flows-and-prototype-spec.md), which specifies five screens (adds the subscription detail and the reminder list), the text catalogue and the Figma prototype requirements. The API mappings below remain valid. See decision D-23.
+
+---
+
 # Ekran Taslakları ve API Eşleşmeleri
 
 Bu belge, abonelik yönetim uygulamasının temel ekran taslaklarını, bileşenlerini ve tetikledikleri API uç noktalarını tanımlar.
