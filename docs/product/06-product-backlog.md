@@ -51,7 +51,7 @@ Order of work (top first). Dependencies follow the Architect's dependency commen
 | 7 | US-05 | #13 | As a user, I can remove a subscription from tracking and I am told the real subscription is not cancelled. | E2 | P2 | 3 | US-02, US-03 | S2, S3 | Implementation (Emre Alay) | Ready |
 | 8 | US-06 | #14 | As a user, I cannot create the same active subscription twice. | E2 | P2 | 2 | US-03, T-03 | S4 | Implementation (Emre Alay) | Ready |
 | 9 | US-09 | #17 | As a user, I can see a read-only list of my reminders. | E3 | P2 | 3 | US-02, US-08 | S5 | Architect (ybyaman) | Ready |
-| 10 | US-11 | new | As a user, I can log out, and I am taken back to the sign-in screen when my session expires, so that nobody else can use my data on my phone. | E1 | P2 | 2 | US-02 | S1 | Implementation (Emre Alay) | Ready |
+| 10 | US-11 | #69 | As a user, I can log out, and I am taken back to the sign-in screen when my session expires, so that nobody else can use my data on my phone. | E1 | P2 | 2 | US-02 | S1 | Implementation (Emre Alay) | Ready |
 | – | US-10 | #18 | As a user, I can snooze a reminder. | E3 | P3 (deferred) | 3 | US-08, US-09 | – | Not in first release | Deferred |
 
 **Total for stories in the first release (US-01 … US-09 and US-11): 39 points** (37 points in version 1.0 plus US-11). US-10 is excluded.
