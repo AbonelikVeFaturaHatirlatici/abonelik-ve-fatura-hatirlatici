@@ -72,7 +72,7 @@ def test_subscription_create_rejects_invalid_inputs(kwargs: dict) -> None:
 
 def test_subscription_from_record_and_utc_conversion() -> None:
     sub_id = uuid.uuid4()
-    naive_created = datetime(2026, 1, 10, 12, 0, 0)
+    naive_created = datetime(2026, 1, 10, 12, 0, 0, tzinfo=UTC).replace(tzinfo=None)
     aware_cancelled = datetime(2026, 2, 10, 15, 0, 0, tzinfo=UTC)
     record = SimpleNamespace(
         id=sub_id,
