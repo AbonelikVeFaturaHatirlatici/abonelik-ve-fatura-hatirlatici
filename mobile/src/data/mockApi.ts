@@ -1,6 +1,8 @@
 /**
  * Bellek içi mock sunucu: `ApiClient` arayüzünü sözleşmedeki davranışla uygular.
- * Gerçek ağ çağrısı yapmaz (S2-05). S2-06'da aynı arayüzü uygulayan HTTP istemcisiyle değiştirilir.
+ * Gerçek ağ çağrısı yapmaz. `EXPO_PUBLIC_USE_MOCK_API=true` ile seçilir (src/data/api.ts);
+ * varsayılan istemci src/api/httpApi.ts'tir. Token, HTTP istemcisindeki gibi
+ * `getAccessToken` ile token deposundan okunur.
  *
  * Sözleşme davranışları: başkasına ait kayıt → 404, harf duyarsız tekrar → 409,
  * iptal edilmiş kayıt yeniden eklenebilir, liste en yeni önce, hatırlatmalar
@@ -152,102 +154,106 @@ function validateCreate(body: SubscriptionCreate): SubscriptionCreate {
   return { ...body, serviceName };
 }
 
-export const mockApi: ApiClient = {
-  async registerUser(body: Credentials): Promise<User> {
-    await delay();
-    const email = validateCredentials(body);
-    if (db.users.some((user) => user.email === email)) {
-      fail(409, serverErrors.emailAlreadyRegistered);
-    }
-    const user: StoredUser = {
-      id: newUuid(),
-      email,
-      password: body.password,
-      createdAt: nowUtc(),
-    };
-    db.users.push(user);
-    return { id: user.id, email: user.email, createdAt: user.createdAt };
-  },
+export function createMockApi(getAccessToken: () => string | null): ApiClient {
+  const currentUser = (): StoredUser => authenticate(getAccessToken() ?? '');
 
-  async login(body: Credentials): Promise<Token> {
-    await delay();
-    const email = validateCredentials(body);
-    const user = db.users.find((candidate) => candidate.email === email);
-    // Bilinmeyen e-posta ve yanlış şifre aynı mesajı alır (BR-11).
-    if (!user || user.password !== body.password) {
-      fail(401, serverErrors.invalidCredentials);
-    }
-    return { accessToken: `${TOKEN_PREFIX}${user.id}`, tokenType: 'bearer' };
-  },
+  return {
+    async registerUser(body: Credentials): Promise<User> {
+      await delay();
+      const email = validateCredentials(body);
+      if (db.users.some((user) => user.email === email)) {
+        fail(409, serverErrors.emailAlreadyRegistered);
+      }
+      const user: StoredUser = {
+        id: newUuid(),
+        email,
+        password: body.password,
+        createdAt: nowUtc(),
+      };
+      db.users.push(user);
+      return { id: user.id, email: user.email, createdAt: user.createdAt };
+    },
 
-  async createSubscription(token: string, body: SubscriptionCreate): Promise<Subscription> {
-    await delay();
-    const user = authenticate(token);
-    const data = validateCreate(body);
-    const duplicate = db.subscriptions.some(
-      (subscription) =>
-        subscription.userId === user.id &&
-        subscription.status === 'active' &&
-        subscription.period === data.period &&
-        subscription.serviceName.toLowerCase() === data.serviceName.toLowerCase(),
-    );
-    if (duplicate) {
-      fail(409, serverErrors.subscriptionAlreadyActive);
-    }
-    // Hatırlatmaları günlük iş üretir (UC-07); yeni abonelik boş listeyle döner.
-    const stored: StoredSubscription = {
-      id: newUuid(),
-      userId: user.id,
-      serviceName: data.serviceName,
-      amountKurus: data.amountKurus,
-      period: data.period,
-      startDate: data.startDate,
-      status: 'active',
-      createdAt: nowUtc(),
-      cancelledAt: null,
-    };
-    db.subscriptions.push(stored);
-    return toSubscription(stored);
-  },
+    async login(body: Credentials): Promise<Token> {
+      await delay();
+      const email = validateCredentials(body);
+      const user = db.users.find((candidate) => candidate.email === email);
+      // Bilinmeyen e-posta ve yanlış şifre aynı mesajı alır (BR-11).
+      if (!user || user.password !== body.password) {
+        fail(401, serverErrors.invalidCredentials);
+      }
+      return { accessToken: `${TOKEN_PREFIX}${user.id}`, tokenType: 'bearer' };
+    },
 
-  async listSubscriptions(token: string): Promise<Subscription[]> {
-    await delay();
-    const user = authenticate(token);
-    return db.subscriptions
-      .filter((subscription) => subscription.userId === user.id)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map(toSubscription);
-  },
+    async createSubscription(body: SubscriptionCreate): Promise<Subscription> {
+      await delay();
+      const user = currentUser();
+      const data = validateCreate(body);
+      const duplicate = db.subscriptions.some(
+        (subscription) =>
+          subscription.userId === user.id &&
+          subscription.status === 'active' &&
+          subscription.period === data.period &&
+          subscription.serviceName.toLowerCase() === data.serviceName.toLowerCase(),
+      );
+      if (duplicate) {
+        fail(409, serverErrors.subscriptionAlreadyActive);
+      }
+      // Hatırlatmaları günlük iş üretir (UC-07); yeni abonelik boş listeyle döner.
+      const stored: StoredSubscription = {
+        id: newUuid(),
+        userId: user.id,
+        serviceName: data.serviceName,
+        amountKurus: data.amountKurus,
+        period: data.period,
+        startDate: data.startDate,
+        status: 'active',
+        createdAt: nowUtc(),
+        cancelledAt: null,
+      };
+      db.subscriptions.push(stored);
+      return toSubscription(stored);
+    },
 
-  async getSubscription(token: string, id: Uuid): Promise<Subscription> {
-    await delay();
-    const user = authenticate(token);
-    return toSubscription(findOwned(user, id));
-  },
-
-  async cancelSubscription(token: string, id: Uuid): Promise<Subscription> {
-    await delay();
-    const user = authenticate(token);
-    const stored = findOwned(user, id);
-    if (stored.status === 'cancelled') {
-      fail(409, serverErrors.alreadyCancelled);
-    }
-    stored.status = 'cancelled';
-    stored.cancelledAt = nowUtc();
-    return toSubscription(stored);
-  },
-
-  async listReminders(token: string): Promise<Reminder[]> {
-    await delay();
-    const user = authenticate(token);
-    const ownIds = new Set(
-      db.subscriptions
+    async listSubscriptions(): Promise<Subscription[]> {
+      await delay();
+      const user = currentUser();
+      return db.subscriptions
         .filter((subscription) => subscription.userId === user.id)
-        .map((subscription) => subscription.id),
-    );
-    return db.reminders
-      .filter((reminder) => ownIds.has(reminder.subscriptionId))
-      .sort((a, b) => b.remindOn.localeCompare(a.remindOn) || a.daysBefore - b.daysBefore)
-      .map((reminder) => ({ ...reminder }));
-  },
-};
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(toSubscription);
+    },
+
+    async getSubscription(id: Uuid): Promise<Subscription> {
+      await delay();
+      const user = currentUser();
+      return toSubscription(findOwned(user, id));
+    },
+
+    async cancelSubscription(id: Uuid): Promise<Subscription> {
+      await delay();
+      const user = currentUser();
+      const stored = findOwned(user, id);
+      if (stored.status === 'cancelled') {
+        fail(409, serverErrors.alreadyCancelled);
+      }
+      stored.status = 'cancelled';
+      stored.cancelledAt = nowUtc();
+      return toSubscription(stored);
+    },
+
+    async listReminders(): Promise<Reminder[]> {
+      await delay();
+      const user = currentUser();
+      const ownIds = new Set(
+        db.subscriptions
+          .filter((subscription) => subscription.userId === user.id)
+          .map((subscription) => subscription.id),
+      );
+      return db.reminders
+        .filter((reminder) => ownIds.has(reminder.subscriptionId))
+        .sort((a, b) => b.remindOn.localeCompare(a.remindOn) || a.daysBefore - b.daysBefore)
+        .map((reminder) => ({ ...reminder }));
+    },
+  };
+}

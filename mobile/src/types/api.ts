@@ -1,7 +1,13 @@
 /**
- * api/openapi.yaml şemalarının birebir TypeScript karşılıkları.
- * Alan adları ve tipler sözleşmeyle aynıdır; S2-06'da gerçek API istemcisi aynı tipleri kullanır.
+ * API tipleri: api/openapi.yaml'dan `npm run generate:api` ile üretilen
+ * src/api/schema.d.ts'ten türetilir. Burada alan elle tanımlanmaz; sözleşme
+ * değişirse tipler yeniden üretilir ve uyumsuz kod `npm run typecheck`'te yakalanır.
+ *
+ * Ekranlar ve context'ler bu adları kullanır (S2-05 ile aynı adlar).
  */
+import type { components } from '../api/schema';
+
+type Schemas = components['schemas'];
 
 /** `format: uuid` */
 export type Uuid = string;
@@ -10,94 +16,34 @@ export type IsoDate = string;
 /** `format: date-time` — UTC zaman damgası */
 export type IsoDateTime = string;
 
-/** components.schemas.Error */
-export interface ApiErrorBody {
-  code: string;
-  message: string;
-}
-
-/** components.schemas.Credentials */
-export interface Credentials {
-  email: string;
-  password: string;
-}
-
-/** components.schemas.User */
-export interface User {
-  id: Uuid;
-  email: string;
-  createdAt: IsoDateTime;
-}
-
-/** components.schemas.Token */
-export interface Token {
-  accessToken: string;
-  tokenType: 'bearer';
-}
-
-/** components.schemas.Period */
-export type Period = 'monthly' | 'yearly';
-
-/** components.schemas.SubscriptionCreate */
-export interface SubscriptionCreate {
-  serviceName: string;
-  /** Kuruş cinsinden tamsayı (229,99 TL = 22999) */
-  amountKurus: number;
-  period: Period;
-  startDate: IsoDate;
-}
-
-export type SubscriptionStatus = 'active' | 'cancelled';
-
-/** components.schemas.ReminderStatus */
-export type ReminderStatus = 'created' | 'sent_mock';
-
-export type DaysBefore = 3 | 1;
-
-/** components.schemas.ReminderSummary */
-export interface ReminderSummary {
-  daysBefore: DaysBefore;
-  remindOn: IsoDate;
-  status: ReminderStatus;
-}
-
-/** components.schemas.Subscription */
-export interface Subscription {
-  id: Uuid;
-  serviceName: string;
-  amountKurus: number;
-  currency: 'TRY';
-  period: Period;
-  startDate: IsoDate;
-  nextRenewalDate: IsoDate;
-  status: SubscriptionStatus;
-  reminders: ReminderSummary[];
-  createdAt: IsoDateTime;
-  cancelledAt?: IsoDateTime | null;
-}
-
-/** components.schemas.Reminder */
-export interface Reminder {
-  id: Uuid;
-  subscriptionId: Uuid;
-  renewalDate: IsoDate;
-  daysBefore: DaysBefore;
-  remindOn: IsoDate;
-  status: ReminderStatus;
-  createdAt: IsoDateTime;
-}
+export type ApiErrorBody = Schemas['Error'];
+export type Credentials = Schemas['Credentials'];
+export type User = Schemas['User'];
+export type Token = Schemas['Token'];
+export type Period = Schemas['Period'];
+export type SubscriptionCreate = Schemas['SubscriptionCreate'];
+export type Subscription = Schemas['Subscription'];
+export type SubscriptionStatus = Subscription['status'];
+export type ReminderSummary = Schemas['ReminderSummary'];
+export type ReminderStatus = Schemas['ReminderStatus'];
+export type Reminder = Schemas['Reminder'];
+export type DaysBefore = Reminder['daysBefore'];
 
 /**
  * Sözleşmedeki 7 işlemin istemci arayüzü (operationId adlarıyla).
- * S2-05'te `data/mockApi.ts` uygular; S2-06'da HTTP istemcisi aynı arayüzü uygular.
- * Hatalar `ApiRequestError` (data/apiError.ts) olarak fırlatılır.
+ *
+ * Erişim token'ı parametre olarak geçilmez: korumalı uçlarda istemci onu
+ * token deposundan (src/auth/tokenStorage.ts) kendisi okuyup ekler.
+ * Uygulamalar: src/api/httpApi.ts (gerçek API / Prism) ve src/data/mockApi.ts.
+ * Hatalar `ApiRequestError` ({code, message}) veya `ApiNetworkError` olarak fırlatılır
+ * (src/data/apiError.ts).
  */
 export interface ApiClient {
   registerUser(body: Credentials): Promise<User>;
   login(body: Credentials): Promise<Token>;
-  createSubscription(token: string, body: SubscriptionCreate): Promise<Subscription>;
-  listSubscriptions(token: string): Promise<Subscription[]>;
-  getSubscription(token: string, id: Uuid): Promise<Subscription>;
-  cancelSubscription(token: string, id: Uuid): Promise<Subscription>;
-  listReminders(token: string): Promise<Reminder[]>;
+  createSubscription(body: SubscriptionCreate): Promise<Subscription>;
+  listSubscriptions(): Promise<Subscription[]>;
+  getSubscription(id: Uuid): Promise<Subscription>;
+  cancelSubscription(id: Uuid): Promise<Subscription>;
+  listReminders(): Promise<Reminder[]>;
 }

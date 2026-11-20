@@ -1,5 +1,6 @@
 import { DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '../context/AuthContext';
 import { AddSubscriptionScreen } from '../screens/AddSubscriptionScreen';
@@ -26,9 +27,18 @@ const theme: Theme = {
 /**
  * Oturum yoksa yalnızca S1 vardır; oturum varsa S2/S5, S3 ve S4.
  * Çıkış veya 401 sonrası yığın S1'e döner ve geri tuşu veri ekranlarına dönmez (akış F6).
+ * Açılışta token SecureStore'dan okunurken hiçbir ekran gösterilmez (S1 bir an görünmesin).
  */
 export function RootNavigator() {
-  const { token } = useAuth();
+  const { token, isRestoring } = useAuth();
+
+  if (isRestoring) {
+    return (
+      <View style={styles.restoring}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer theme={theme}>
@@ -51,3 +61,12 @@ export function RootNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  restoring: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+  },
+});

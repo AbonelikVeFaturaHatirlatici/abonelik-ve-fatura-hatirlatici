@@ -114,6 +114,13 @@ export const strings = {
     unknownSubscription: 'Abonelik',
   },
   notFound: 'Abonelik bulunamadı.',
+  /** Sunucu sözleşmedeki `{code, message}` gövdesini döndürmediğinde kullanılır. */
+  apiErrors: {
+    unauthorized: 'Geçerli bir oturum gerekli.',
+    notFound: 'İstenen kayıt bulunamadı.',
+    server: 'Sunucuda bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+    generic: 'İstek işlenemedi. Lütfen tekrar deneyin.',
+  },
 } as const;
 
 /**

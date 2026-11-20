@@ -3,7 +3,8 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', '.expo/**', 'dist/**', 'web-build/**'],
+    // src/api/schema.d.ts: api/openapi.yaml'dan `npm run generate:api` ile üretilir; elle düzenlenmez.
+    ignores: ['node_modules/**', '.expo/**', 'dist/**', 'web-build/**', 'src/api/schema.d.ts'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
