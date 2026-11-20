@@ -525,6 +525,17 @@ Material Design 3 baseline for Android; Roboto; frame 360 × 800 dp; 8 dp spacin
 | Empty state | Illustration, text, optional button |
 | Skeleton | Card placeholder |
 
+### 7.4 Contrast review (19 November 2026)
+
+The contrast of every color pair used in the Figma frames was calculated (WCAG ratio). All pairs reach 4.5 : 1 except the four below. The Figma file keeps the tokens of section 7.2; the corrected values are used in the application (Sprint 3).
+
+| Pair | Ratio now | Corrected value | Ratio after |
+|---|---|---|---|
+| `color/success` `#2B8A3E` on white | 4.37 | `#237B34` | 5.31 |
+| `color/success` on the status chip `#EBFBEE` | 4.07 | `#237B34` | 4.95 |
+| `color/primary` `#3B5BDB` on the selected-tab pill `#DBE4FF` | 4.47 | `#364FC7` | 5.34 |
+| `color/muted` `#868E96` on white (removed cards) | 3.32 | `#6C757D` | 4.69 |
+
 ## 8. Figma file requirements (task T-09)
 
 ### 8.1 Structure
@@ -575,7 +586,7 @@ The prototype must allow the usability tasks T1 to T5 (section 4.7) without leav
 
 - [ ] Every screen state of section 8.2 exists and uses the texts of section 6.
 - [ ] The removal dialog text and the button name are exactly as in UIR-03.
-- [ ] Touch targets are at least 48 × 48 dp; text contrast is at least 4.5 : 1 (checked with a contrast tool).
+- [x] Touch targets are at least 48 × 48 dp; text contrast is at least 4.5 : 1 (calculated for every color pair; four exceptions with corrections in section 7.4).
 - [ ] All connections of section 8.3 work in presentation mode from the first frame.
 - [x] The file is shared with "anyone with the link can view"; the link is entered at the top of this document and in the Sprint 2 submission file.
 - [ ] The user-flow diagrams exist as PNG in `docs/product/flows/` (exported from the Mermaid sources of this document, so that they are in the repository history); the Figma page "1 User flows" shows the same flows.

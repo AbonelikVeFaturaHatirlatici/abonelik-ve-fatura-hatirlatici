@@ -173,17 +173,17 @@ Criteria are written so that QA can derive tests directly. `AT-nn` is the identi
 
 ### 6.2 Sprint 2 tasks (milestone `Sprint-2`, due 24 November 2026)
 
-The issues marked *new* are created by the Product Owner (T-07 to T-09, T-11) and by the role owners (the others) at Sprint 2 planning; the issue number is entered here when it exists.
+The issues T-07 to T-13 (#57 to #63) were created on 18 November 2026 and belong to milestone `Sprint-2`.
 
 | ID | Issue | Task | Epic | Points | Depends on | Proposed owner | Deliverable |
 |---|---|---|---|---:|---|---|---|
-| T-07 | new | Software Requirements Specification and refined backlog | E5 | 5 | Vision, ADRs, OpenAPI | PO (Zeynep) | `03-requirements.md`, `06-product-backlog.md` |
-| T-08 | new | Non-functional requirements and quality-measure specification | E5 | 3 | T-07; Architect, QA and DevOps consulted | PO (Zeynep) | `07-nonfunctional-requirements.md` |
-| T-09 | new | Figma UI/UX prototype and user-flow diagrams | E5 | 5 | T-07; `08-user-flows-and-prototype-spec.md` | PO (Zeynep) draws; Implementation reviews feasibility | Figma file (view link) and `08-user-flows-and-prototype-spec.md` |
-| T-10 | new | C4 model (levels 1 to 3) and UML architecture document | E5 | 8 | ADR-001 to ADR-004, database schema, T-07 | Architect (ybyaman) | `docs/architecture/` |
-| T-11 | new | Usability test of the prototype with 5 users | E5 | 2 | T-09 | PO (Zeynep) with QA | `docs/qa/usability-test-sprint-2.md` |
-| T-12 | new | Sprint 2 submission file, evidence and tag `sprint2` | E5 | 1 | T-07 to T-11, T-13 | Scrum Master (ynessakar), DevOps (AhmeTalhAkyol) | `docs/SPRINT-2-SUBMISSION.md`, release `sprint2` |
-| T-13 | new | Repository hygiene: merge `develop` into `main` without rewriting history, correct the Sprint 1 tag link | E4 | 2 | none | DevOps (AhmeTalhAkyol), Architect | `main` equals the reviewed `develop`; tags `sprint1` and `sprint2` documented |
+| T-07 | #57 | Software Requirements Specification and refined backlog | E5 | 5 | Vision, ADRs, OpenAPI | PO (Zeynep) | `03-requirements.md`, `06-product-backlog.md` |
+| T-08 | #58 | Non-functional requirements and quality-measure specification | E5 | 3 | T-07; Architect, QA and DevOps consulted | PO (Zeynep) | `07-nonfunctional-requirements.md` |
+| T-09 | #59 | Figma UI/UX prototype and user-flow diagrams | E5 | 5 | T-07; `08-user-flows-and-prototype-spec.md` | PO (Zeynep) draws; Implementation reviews feasibility | Figma file (view link) and `08-user-flows-and-prototype-spec.md` |
+| T-10 | #60 | C4 model (levels 1 to 3) and UML architecture document | E5 | 8 | ADR-001 to ADR-004, database schema, T-07 | Architect (ybyaman) | `docs/architecture/` |
+| T-11 | #61 | Usability test of the prototype with 5 users | E5 | 2 | T-09 | PO (Zeynep) with QA | `docs/qa/usability-test-sprint-2.md` |
+| T-12 | #62 | Sprint 2 submission file, evidence and tag `sprint2` | E5 | 1 | T-07 to T-11, T-13 | Scrum Master (ynessakar), DevOps (AhmeTalhAkyol) | `docs/SPRINT-2-SUBMISSION.md`, release `sprint2` |
+| T-13 | #63 | Repository hygiene: merge `develop` into `main` without rewriting history, correct the Sprint 1 tag link | E4 | 2 | none | DevOps (AhmeTalhAkyol), Architect | `main` equals the reviewed `develop`; tags `sprint1` and `sprint2` documented |
 
 **Sprint 2 total: 26 points for T-07 to T-13, plus T-05 (5 points), 31 points in all.** These tasks are mostly documents; their size is an estimate of effort for planning, not a measure of velocity for the MVP.
 

@@ -60,5 +60,5 @@ I, the Product Owner, approve the decisions D-01 to D-27 above, the Software Req
 | 6 | Fill in the contribution table in the submission file after the last pull requests are merged. | Scrum Master, Architect | In progress |
 | 7 | Acknowledge D-23 to D-27 in the pull request review: D-23 and D-24 (Architect, Implementation), D-25 and D-26 (Implementation, Architect), D-27 (Architect, QA, DevOps). | Architect, Implementation, QA, DevOps | Open |
 | 8 | Re-open issue #16 (US-08) or open the child issue US-08b: the pull request of slice 1 closed it, but the story is not done (backlog section 4.2). | Architect | Open |
-| 9 | Create the milestones `Sprint-2` (due 24 November 2026) and `Sprint-3` (due 17 December 2026) and the issues for T-07 to T-13. | Scrum Master, PO | Open |
+| 9 | Create the milestones `Sprint-2` (due 24 November 2026) and `Sprint-3` (due 17 December 2026) and the issues for T-07 to T-13. | Scrum Master, PO | Done (18 Nov 2026; issues #57 to #63) |
 | 10 | Move the Sprint 2 due date in `docs/process/sprint-schedule-and-impediment-log.md` from 26 to 24 November 2026 (instructor's announcement). | Scrum Master | Open |
