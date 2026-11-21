@@ -19,3 +19,19 @@ The documents below are kept unchanged as history. Add the matching note at the 
 ## Note for "Technical Architecture v2"
 
 > **Revision note (31 October 2026).** This version describes one reminder per renewal. It is **superseded** by Technical Architecture v4 (the current version; v3 already described two reminders). See the decision log, D-01, D-02 and D-20.
+
+---
+
+# Sprint 2 revision notes (17 November 2026)
+
+**Owner:** Zeynep Sude Develi (`zsudedeveli`), Product Owner
+
+These notes record how the Sprint 2 documents relate to the Sprint 1 documents, so that history stays readable.
+
+| Sprint 1 document | Sprint 2 change |
+|---|---|
+| `03-requirements.md` version 1.0 (Requirements Specification and Traceability) | Replaced in place by the **Software Requirements Specification, version 2.0**. FR-01 to FR-13 keep their identifiers and meaning; FR-14, FR-15, use cases, UI requirements, business rules, data requirements and the error catalogue are new. The eight short NFRs of section 2 moved to `07-nonfunctional-requirements.md` (mapping in its section 7). Version 1.0 remains in the Git history (tag `sprint1`). |
+| `06-product-backlog.md` version 1.0 | Replaced in place by **version 2.0**: status column, US-11, Sprint 3 proposal, Sprint 2 tasks, Definition of Ready check. Story points are unchanged. See section 9 of the backlog. |
+| `ekran-taslaklari.md` (three screen drafts, PR #34) | **Superseded** by `08-user-flows-and-prototype-spec.md` (five screens). The file stays as history; a revision note at its top points to the new document. |
+
+Other documents are unchanged by Sprint 2 and remain valid: the proposal, the system vision and boundary, the decision log (extended with D-23 to D-27), the OpenAPI contract and the ADRs.
