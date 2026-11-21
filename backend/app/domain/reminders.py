@@ -4,6 +4,7 @@ Günlük iş bu fonksiyonu her aktif abonelik için çağırır; dönen listeden
 zaten kayıtlı olanları `(subscription_id, renewal_date, days_before)` benzersiz kısıtı
 eler, kalanları kaydedip gönderir.
 """
+
 from dataclasses import dataclass
 from datetime import date, timedelta
 
@@ -16,8 +17,8 @@ REMINDER_OFFSETS: tuple[int, ...] = (3, 1)
 @dataclass(frozen=True)
 class DueReminder:
     renewal_date: date  # hatırlatılan yenileme günü
-    days_before: int    # 3 veya 1
-    remind_on: date     # renewal_date - days_before
+    days_before: int  # 3 veya 1
+    remind_on: date  # renewal_date - days_before
 
 
 def due_reminders(
