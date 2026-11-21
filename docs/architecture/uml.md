@@ -82,7 +82,7 @@ classDiagram
 ```
 
 Notes:
-- `User`, `Subscription` and `Reminder` match `backend/app/infra/models.py`, and `Period` and `DueReminder` match `backend/app/domain/`. `ReminderJob`, `NotificationPort` and `MockNotifier` are design and are not in the code yet.
+- `User`, `Subscription` and `Reminder` match `backend/app/infra/models.py`, and `Period` and `DueReminder` match `backend/app/domain/`. `ReminderJob` is implemented by the functions in `backend/app/services/reminder_job.py`, `NotificationPort` by `backend/app/domain/notifications.py` and `MockNotifier` by `backend/app/infra/notifier.py`.
 - The renewal date is not stored; it is computed from `start_date` and `period` with `next_renewal` (ADR-003).
 - `(subscriptionId, renewalDate, daysBefore)` is unique; the database prevents duplicate reminders (ADR-002).
 - A user can have only one active subscription with the same service name and period (409).
@@ -156,7 +156,7 @@ sequenceDiagram
 
 ### 2.3 Daily reminder job (including the duplicate-send constraint)
 
-The job runs inside the API process every day at 09:00 (Europe/Istanbul) (ADR-002). Even if the job runs twice, or two API copies run, a reminder is saved only once.
+The job runs inside the API process every day at 09:00 (Europe/Istanbul) (ADR-002). The job has two phases and each can be repeated safely. Even if the job runs twice, or two API copies run, a reminder is saved and sent only once.
 
 ```mermaid
 sequenceDiagram
@@ -167,32 +167,36 @@ sequenceDiagram
     participant N as NotificationPort (MockNotifier)
 
     Z->>J: triggers at 09:00 (today = Europe/Istanbul date)
+    Note over J,D: Phase 1: generation
     J->>D: fetch active subscriptions
     D-->>J: subscription list
     loop each active subscription
         J->>R: due_reminders(start, period, created_on, today)
         R-->>J: reminders that are due (3 days and/or 1 day)
-        loop each due reminder
-            J->>D: begin transaction, INSERT reminders (status = created)
-            alt (subscription_id, renewal_date, days_before) already exists
-                D-->>J: unique constraint violation
-                J->>J: skip silently (expected case, not an error)
-            else new record
-                D-->>J: inserted
-                J->>N: send(reminder)
-                alt send succeeded
-                    N->>D: status = sent_mock
-                    J->>D: commit (record and send are one transaction)
-                else send failed
-                    J->>D: roll back (no record is created)
-                    Note over J: retried on the next run
-                end
+        J->>D: INSERT reminders (status = created) ON CONFLICT DO NOTHING
+        Note over J,D: an existing (subscription_id, renewal_date, days_before) is skipped silently
+    end
+    Note over J,D: Phase 2: dispatch
+    J->>D: select ids: status = created, remind_on <= today, renewal_date > today, subscription active
+    D-->>J: reminder ids
+    loop each reminder (own transaction)
+        J->>D: lock the row (FOR UPDATE SKIP LOCKED)
+        alt locked by another process, or already sent or cancelled
+            D-->>J: no row
+            J->>J: skip
+        else row locked
+            J->>N: send(reminder)
+            alt send succeeded
+                J->>D: status = sent_mock, commit
+            else send failed
+                J->>D: roll back (record stays created)
+                Note over J: retried on the next run
             end
         end
     end
 ```
 
-Rules (ADR-002): `R` is the first renewal day strictly after today; a record is inserted only if `remind_on ≤ today` and `remind_on ≥` the day the subscription was added. If the server is down at 09:00, the reminders that are due are generated on the next run. On the renewal day `R` moves to the next period, so no reminder is produced for that day. Known limitation: if a subscription is added on a reminder day after 09:00, that day's reminder is not generated. A cancelled subscription gets no new reminders; existing ones stay in the list.
+Rules (ADR-002): `R` is the first renewal day strictly after today; a record is inserted only if `remind_on ≤ today` and `remind_on ≥` the day the subscription was added. A record is sent only if its status is `created`, `remind_on ≤ today` and `renewal_date > today`. If the server is down at 09:00, the reminders that are due are generated and sent on the next run. On the renewal day `R` moves to the next period, so no reminder is produced for that day. Known limitation: if a subscription is added on a reminder day after 09:00, that day's reminder is not generated. A cancelled subscription gets no new reminders; existing ones stay in the list but are not sent.
 
 ## 3. State diagrams
 
