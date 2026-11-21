@@ -75,7 +75,7 @@ Change introduced in Sprint 2: The mobile app calls the API through a typed clie
  
 The inside of the `api` container. The text on each arrow says what is carried. Dependencies point one way only: `domain/` depends on nothing (ADR-001).
  
-Status note: At the end of Sprint 1 the code contains only `domain/` (renewal, reminders), `infra/` (config, db, errors, models) and the `/health` endpoint. The routers, the security layer, the daily job and `MockNotifier` are design and have not been written yet.
+Status note: As of Sprint 2 (#65) the routers, the security layer, the services, the daily reminder job (`app/services/reminder_job.py`, scheduled in `app/infra/scheduler.py`) and `MockNotifier` are implemented, together with `domain/` and `infra/`.
  
 ```mermaid
 flowchart TB
@@ -145,14 +145,14 @@ flowchart TB
 | renewal | Renewal date: calculated from the start date, last day of the month in short months | ADR-003 |
 | reminders (domain) | Reminders due today for 3 days and 1 day before; does not generate one that falls in the past, catches up on missed ones | ADR-002 |
 | Models and data access | `app/infra/models.py`, `db.py`; database access; partial unique indexes and CHECK constraints are in the schema | ADR-001, ADR-003 |
-| Daily reminder job | Every day at 09:00; inserts the record and hands it to `NotificationPort`; silently skips a unique-constraint error | ADR-002 |
+| Daily reminder job | Every day at 09:00; phase 1 generates the records (`ON CONFLICT DO NOTHING`), phase 2 hands the due ones to `NotificationPort`, one transaction each; a failed send is retried on the next run | ADR-002 |
 | NotificationPort / MockNotifier | Mock record instead of real push; if real push is added, only the adapter changes | ADR-002 |
  
 ## Level 3: Components (Mobile app)
 
 The inside of the Android app (React Native + Expo, TypeScript, `mobile/`). The app has five screens (D-23): S1 sign-in and registration, S2 subscription list, S3 subscription detail, S4 add subscription, S5 reminders. S2 and S5 are tabs of one main view with a bottom bar; S1, S3 and S4 are full screens. The screens follow the Figma prototype (S2-04) and `docs/product/08-user-flows-and-prototype-spec.md`.
 
-Status note: The screens, navigation and state are built (S2-05). The data layer currently returns mock data (`mockApi`). The HTTP client generated from `api/openapi.yaml` and token storage in Expo SecureStore are planned for S2-06.
+Status note: The screens, navigation and state are built (S2-05). The data layer calls the API through the HTTP client generated from `api/openapi.yaml` (`api/httpApi.ts`, S2-06, #68); the token is kept in Expo SecureStore (`auth/tokenStorage.ts`). `mockApi` is still available and is selected with `EXPO_PUBLIC_USE_MOCK_API`.
 
 ```mermaid
 flowchart TB
@@ -179,12 +179,12 @@ flowchart TB
         end
 
         subgraph dataLayer["Data layer (mobile/src/data)"]
-            client["<b>API client</b><br/>api.ts<br/>S2-05: mockApi, S2-06: HTTP client<br/>generated from openapi.yaml"]
+            client["<b>API client</b><br/>api.ts<br/>HTTP client generated from<br/>openapi.yaml (default),<br/>mockApi (EXPO_PUBLIC_USE_MOCK_API)"]
             errorMap["<b>Error mapping</b><br/>apiError.ts<br/>{ code, message } to Turkish text"]
         end
 
         helpers["<b>Helpers</b><br/>validation, formatting (kuruş to TL),<br/>text catalogue, renewal date"]
-        storage["<b>Token storage</b><br/>Expo SecureStore (JWT)<br/>planned, S2-06"]
+        storage["<b>Token storage</b><br/>Expo SecureStore (JWT)<br/>tokenStorage.ts"]
     end
 
     user -->|"taps, fills in forms"| screens
@@ -221,6 +221,6 @@ flowchart TB
 | API client | The single place for network calls; the types come from the contract and are never edited by hand |
 | Error mapping | Turns errors such as 400, 401 and 409 into Turkish messages (D-19) |
 | Helpers | Form validation, amount entry in lira converted to integer kuruş without rounding (D-26), amount display as `229,99 ₺`, renewal date for display |
-| Token storage | The JWT is kept in secure storage on the device (NFR-S5); in S2-05 it is only in memory |
+| Token storage | The JWT is kept in secure storage on the device (NFR-S5); `tokenStorage.ts` uses Expo SecureStore with an in-memory cache and loads the token at startup |
 
 These diagrams are consistent with the class and sequence diagrams in `docs/architecture/uml.md`. Class names are the same as in the domain module.
