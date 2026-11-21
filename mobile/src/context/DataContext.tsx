@@ -48,15 +48,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setIsRefreshing(false);
   }
 
-  /** 401 her ekranda aynı ele alınır: token silinir, S1 açılır (FR-14). */
+  /**
+   * 401 her ekranda aynı ele alınır: token silinir, S1 açılır (FR-14).
+   * Token'ı istemci kendisi ekler (src/data/api.ts); burada yalnızca oturum varlığı denetlenir.
+   */
   const run = useCallback(
-    async <T,>(call: (accessToken: string) => Promise<T>): Promise<T> => {
+    async <T,>(call: () => Promise<T>): Promise<T> => {
       if (!token) {
         expireSession();
         throw new Error('Oturum yok.');
       }
       try {
-        return await call(token);
+        return await call();
       } catch (error) {
         if (isApiRequestError(error) && error.status === 401) {
           expireSession();
@@ -72,8 +75,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setIsRefreshing(true);
     try {
       const [nextSubscriptions, nextReminders] = await Promise.all([
-        run((accessToken) => api.listSubscriptions(accessToken)),
-        run((accessToken) => api.listReminders(accessToken)),
+        run(() => api.listSubscriptions()),
+        run(() => api.listReminders()),
       ]);
       setSubscriptions(nextSubscriptions);
       setReminders(nextReminders);
@@ -87,7 +90,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const loadSubscription = useCallback(
     async (id: Uuid) => {
-      const subscription = await run((accessToken) => api.getSubscription(accessToken, id));
+      const subscription = await run(() => api.getSubscription(id));
       setSubscriptions((list) => upsert(list, subscription));
       return subscription;
     },
@@ -96,7 +99,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const createSubscription = useCallback(
     async (body: SubscriptionCreate) => {
-      const subscription = await run((accessToken) => api.createSubscription(accessToken, body));
+      const subscription = await run(() => api.createSubscription(body));
       setSubscriptions((list) => upsert(list, subscription));
       return subscription;
     },
@@ -105,7 +108,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const cancelSubscription = useCallback(
     async (id: Uuid) => {
-      const subscription = await run((accessToken) => api.cancelSubscription(accessToken, id));
+      const subscription = await run(() => api.cancelSubscription(id));
       setSubscriptions((list) => upsert(list, subscription));
       return subscription;
     },
