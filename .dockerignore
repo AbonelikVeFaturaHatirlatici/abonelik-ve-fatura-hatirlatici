@@ -1,0 +1,11 @@
+.git
+.github
+mobile
+docs
+api
+.venv
+backend/.venv
+**/__pycache__
+**/*.pyc
+.env
+backend/.env
