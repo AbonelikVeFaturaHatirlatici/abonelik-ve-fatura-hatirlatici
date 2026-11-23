@@ -8,7 +8,7 @@
 | Project name | Subscription Reminder Mobile Application |
 | GitHub repository | https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici |
 | OpenAPI file | `api/openapi.yaml` |
-| Sprint 1 release tag | `sprint1` → [release page](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint1) |
+| Sprint 1 release tag | `sprint-1` → [release page](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint-1) |
 | License | MIT (`LICENSE`) |
 
 | Member | Role | GitHub |
@@ -48,7 +48,7 @@ All documents describe the same first release: two reminders (3 and 1 day before
 | Sprint calendar, ceremonies and impediment log (Scrum Master, T-06) | [`docs/process/sprint-schedule-and-impediment-log.md`](process/sprint-schedule-and-impediment-log.md), [PR #42](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/pull/42) |
 | Ruleset screenshots and required checks (issue #20) | [1 · targets and bypass list](process/evidence/ruleset-1-genel-ve-hedefler.png), [2 · deletion and force push](process/evidence/ruleset-2-silme-ve-force-push.png), [3 · pull request and status check details](process/evidence/ruleset-3-pr-ve-kontrol-ayrintilari.png) |
 | Commit history / contributors graph | [Commits on `main`](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/commits/main), [Contributors](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/graphs/contributors) |
-| Sprint 1 release tag | [`sprint1`](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint1) |
+| Sprint 1 release tag | [`sprint-1`](https://github.com/AbonelikVeFaturaHatirlatici/abonelik-ve-fatura-hatirlatici/releases/tag/sprint-1) |
 
 ## Individual contributions
 
